@@ -24,7 +24,6 @@ export default function Work({
   turns,
   onTurns,
   onDone,
-  onBack,
   onMode,
 }: {
   /* the situation resolved from what they wrote, never shown as a skill */
@@ -39,7 +38,6 @@ export default function Work({
   turns: Turn[]
   onTurns: (t: Turn[]) => void
   onDone: () => void
-  onBack: () => void
   /* told what Auto actually chose, once the server has chosen it */
   onMode: (m: Mode) => void
 }) {
@@ -149,14 +147,10 @@ export default function Work({
 
   return (
     <section>
-      <div className="thread-bar">
-        <button className="btn btn-subtle" type="button" onClick={onBack}>{work.back}</button>
+      <div className="thread-head">
         {/* Says which way of working this is, and whether it was chosen for
             them. Machinery that picks something should name itself. */}
-        <span className="thread-mode">{copy.head}{auto ? work.autoTag : ''}</span>
-      </div>
-
-      <div className="thread-head">
+        <p className="thread-mode">{copy.head}{auto ? work.autoTag : ''}</p>
         {/* Their own words are the title. Never ours summarising them back. */}
         <p className="recall-said">{working || mod?.title}</p>
         {/* What this is drawing on, and what it is not. Saying so is why it

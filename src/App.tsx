@@ -125,15 +125,20 @@ export default function App() {
     )
   }
 
-  function content() {
+  /* A thread opens OVER home, never instead of it.
+   *
+   * Replacing the page with a bare conversation flattens the hierarchy: home
+   * disappears, every screen sits at the same level, and somebody who followed
+   * one thought has lost the place they were standing. As a panel, the ground
+   * stays visible behind it and closing is obviously a way back rather than a
+   * navigation. */
+  function panel() {
     if (screen.kind === 'landed') {
       return <Landed onAnother={goHome} />
     }
 
     if (screen.kind === 'work' || screen.kind === 'alone') {
-      /* Without an open thread there is nothing to show, so fall back to her own
-         page rather than rendering an empty conversation. */
-      if (!open || !open.used) return renderPage()
+      if (!open || !open.used) return null
       if (screen.kind === 'alone') {
         return (
           <Alone
@@ -160,13 +165,12 @@ export default function App() {
           turns={open.turns ?? []}
           onTurns={onTurns}
           onDone={onDone}
-          onBack={goHome}
           onMode={onMode}
         />
       )
     }
 
-    return renderPage()
+    return null
   }
 
   return (
@@ -205,7 +209,27 @@ export default function App() {
           A thread is one column, so it gets the container here rather than
           rendering straight into the shell, which is what made it full bleed. */}
       <main className="main">
-        {screen.kind === 'page' ? content() : <div className="stream">{content()}</div>}
+        {renderPage()}
+        {screen.kind !== 'page' && (
+          <>
+            {/* Dims what is behind without hiding it, so the page is still
+                legibly there and closing reads as returning. */}
+            <div className="panel-scrim" onClick={goHome} />
+            <div className="panel" role="dialog" aria-modal="true">
+              <div className="panel-bar">
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={app.close}
+                  onClick={goHome}
+                >
+                  {'✕'}
+                </button>
+              </div>
+              <div className="panel-body">{panel()}</div>
+            </div>
+          </>
+        )}
       </main>
 
       {sheet && <RecipeSheet label={sheet} session={session} onClose={() => setSheet(null)} />}

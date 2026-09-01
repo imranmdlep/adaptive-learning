@@ -14,6 +14,7 @@ export const app = {
   pilot: 'An early build. What you do here shapes what gets made.',
   theme: 'Switch theme',
   back: 'Back',
+  close: 'Close',
 }
 
 /* The landing, in both states.
@@ -220,6 +221,7 @@ export const envelope = {
 
 export const work = {
   back: 'Back',
+  close: 'Close',
   autoTag: ', chosen for you',
   /* What this thread is drawing on. An honest count, and it says nothing when
      there is nothing, rather than claiming context it does not have. */

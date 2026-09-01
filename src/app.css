@@ -739,7 +739,11 @@ body {
   flex-direction: column;
   gap: var(--s-lg);
   padding: var(--s-lg) var(--s-md);
-  background: var(--nav);
+  /* --nav is #F6F7F9 and the page is #F5F6F8, one point apart, so the rail and
+     the canvas had no edge between them. --sunken is the DS step that actually
+     reads as a different surface, and it separates in dark as well, where it
+     sits lighter than the page rather than darker. */
+  background: var(--sunken);
   border-right: 1px solid var(--line-2);
 }
 .rail-brand {
@@ -767,9 +771,9 @@ body {
   min-height: 34px;
   cursor: pointer;
 }
-.rail-item:hover { background: var(--sunken); color: var(--ink); }
+.rail-item:hover { background: var(--surface); color: var(--ink); }
 .rail-item:focus-visible { outline: none; box-shadow: var(--focus-ring); }
-.rail-on { background: var(--sunken); color: var(--ink); font-weight: 600; }
+.rail-on { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(22,24,46,.06); }
 .rail-foot {
   margin-top: auto;
   display: flex;
@@ -1298,3 +1302,70 @@ body {
 }
 .record-skill svg { color: var(--muted); flex: none; }
 .record-group + .record-group { margin-top: var(--s-lg); }
+
+/* ==========================================================================
+   A THREAD OPENS OVER HOME, NEVER INSTEAD OF IT.
+   Replacing the page flattens the hierarchy: home disappears, every screen
+   sits at the same level, and somebody who followed one thought has lost the
+   place they were standing.
+   ========================================================================== */
+.panel-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 24, 0.32);
+  z-index: 10;
+}
+.panel {
+  position: absolute;
+  z-index: 11;
+  /* Room on every side. A sheet touching one edge and floating on the others
+     reads as half attached; a card with a margin all round reads as sitting on
+     top of the page, which is what it is doing. */
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: var(--s-lg);
+  width: min(860px, calc(100% - var(--s-lg) * 2));
+  /* Stops short of the top so the page behind is still legibly there. */
+  max-height: calc(100% - var(--s-lg) * 2);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: none;
+  padding: var(--s-xs);
+  border-bottom: 1px solid var(--line-2);
+}
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--s-lg);
+}
+.panel-body > section { max-width: 640px; margin-inline: auto; }
+
+/* Inside the panel the mode label sits above the title rather than opposite a
+   Back button the panel now owns. */
+.thread-head .thread-mode {
+  margin: 0 0 var(--s-xs);
+  font-family: var(--mono);
+  font-size: var(--fz-2xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* main becomes the positioning context for both. */
+.main { position: relative; overflow: hidden; }
+
+@media (max-width: 800px) {
+  .panel { inset: var(--s-sm); top: auto; width: auto; max-height: calc(100% - var(--s-sm) * 2); }
+}
