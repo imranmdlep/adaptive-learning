@@ -6,11 +6,16 @@
  * that knows where you are and a form that asks you to supply the context.
  *
  * In the real product this comes from the platform. Here it reads from the link
- * so both states can be looked at:
+ * so every state can be looked at:
  *
- *   ?session=soon    a session in a few days
+ *   (nothing)        a session in a few days, which is the ordinary case
  *   ?session=today   the day of
- *   (nothing)        no session, which is most weeks
+ *   ?session=none    no session booked
+ *
+ * Booked is the DEFAULT on purpose. Somebody opening this cold, including a
+ * stakeholder, should see the shape the product actually has rather than its
+ * emptiest state, and a missing query string should never be the difference
+ * between a page that makes sense and one that does not.
  *
  * Everyone named here is invented. No real trainer's name goes on behaviour
  * they did not do. */
@@ -55,7 +60,7 @@ const TODAY: Session = { ...SOON, dayNum: '1', day: 'Tue', today: true }
 
 export function getSession(): Session | null {
   const q = new URLSearchParams(window.location.search).get('session')
-  if (q === 'soon') return SOON
+  if (q === 'none') return null
   if (q === 'today') return TODAY
-  return null
+  return SOON
 }
