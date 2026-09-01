@@ -719,3 +719,343 @@ body {
   font-size: var(--fz-sm);
   color: var(--ink-2);
 }
+
+/* ==========================================================================
+   The shell: a rail that never moves, a column that scrolls, an input pinned
+   at the bottom. Borrowed shape, and borrowed for a reason: a place with your
+   own things in it reads as yours, and a menu of things you could do does not.
+   ========================================================================== */
+
+.app {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  min-height: 100dvh;
+  max-width: none;
+  padding: 0;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-lg);
+  padding: var(--s-lg) var(--s-md);
+  background: var(--nav);
+  border-right: 1px solid var(--line-2);
+}
+.rail-brand {
+  display: block;
+  padding: 0 var(--s-sm) var(--s-sm);
+}
+.rail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rail-item {
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: var(--fz-sm);
+  color: var(--ink-2);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: var(--s-xs) var(--s-sm);
+  min-height: 34px;
+  cursor: pointer;
+}
+.rail-item:hover { background: var(--sunken); color: var(--ink); }
+.rail-item:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.rail-on { background: var(--sunken); color: var(--ink); font-weight: 600; }
+.rail-foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: 0 var(--s-sm);
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: none;
+  padding: 0;
+}
+/* The scrolling column. Content is centred and capped; the column is not, so
+   the pinned bar below spans the full width like the page it sits on. */
+.stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--s-2xl, 3rem) var(--s-lg) var(--s-xl);
+}
+.stream > * { max-width: 720px; margin-inline: auto; }
+.stream-center { padding-top: 12vh; }
+
+.block { margin-bottom: var(--s-xl); }
+.block-head {
+  font-family: var(--display);
+  font-size: var(--fz-2xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--s-md);
+}
+.block-sub {
+  font-size: var(--fz-sm);
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 var(--s-xs);
+}
+.greet {
+  font-family: var(--display);
+  font-size: var(--fz-2xl);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--s-md);
+}
+
+/* Coming up */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: var(--s-lg);
+}
+.card-empty { margin: 0; color: var(--muted); font-size: var(--fz-sm); }
+.up-row { display: flex; gap: var(--s-lg); }
+.up-date {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 78px;
+  border-right: 1px solid var(--line-2);
+  padding-right: var(--s-md);
+}
+.up-day { font-family: var(--display); font-size: var(--fz-2xl); font-weight: 600; line-height: 1; }
+.up-month { font-size: var(--fz-sm); color: var(--ink-2); }
+.up-weekday { font-size: var(--fz-xs); color: var(--muted); }
+.up-body { display: flex; flex-direction: column; gap: 2px; }
+.up-title { margin: 0; font-weight: 600; }
+.up-meta { margin: 0; font-size: var(--fz-sm); color: var(--ink-2); }
+.up-shape { margin: var(--s-xs) 0 0; font-size: var(--fz-sm); color: var(--muted); max-width: 44ch; }
+
+/* The record */
+.record-empty { color: var(--muted); font-size: var(--fz-sm); }
+.record-group { margin-bottom: var(--s-lg); }
+.record-day {
+  font-size: var(--fz-sm);
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 var(--s-xs);
+}
+.record-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-md);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: var(--s-xs) var(--s-sm);
+  margin-inline: calc(var(--s-sm) * -1);
+  cursor: pointer;
+}
+.record-row:hover { background: var(--sunken); }
+.record-row:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.record-main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.record-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.record-sub { font-size: var(--fz-sm); color: var(--muted); }
+.record-time { font-size: var(--fz-sm); color: var(--muted); flex: none; }
+
+/* ---- the ask bar --------------------------------------------------------
+   One input, always in the same place. It replaced a menu of formats, and the
+   replacement is the point: someone writes the thing that is happening, and
+   the format is decided from that or reached for afterwards. */
+.askbar {
+  border-top: 1px solid var(--line-2);
+  background: var(--bg);
+  padding: var(--s-md) var(--s-lg) var(--s-lg);
+}
+.askbar > * { max-width: 720px; margin-inline: auto; }
+.askbar-inline { border-top: none; background: none; padding: 0 0 var(--s-xl); }
+.askbar-inline > * { max-width: none; }
+
+.recipes { display: flex; flex-wrap: wrap; gap: var(--s-xs); margin-bottom: var(--s-sm); }
+.recipe-wrap { display: inline-flex; align-items: stretch; }
+.recipe {
+  font: inherit;
+  font-size: var(--fz-sm);
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm) 0 0 var(--r-sm);
+  padding: 5px var(--s-sm);
+  min-height: 32px;
+  cursor: pointer;
+}
+.recipe-grid .recipe { border-radius: var(--r-sm); }
+.recipe:hover { background: var(--sunken); }
+.recipe:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.recipe-on { border-color: var(--navy); color: var(--ink); font-weight: 600; box-shadow: 0 0 0 1px var(--navy) inset; }
+/* The one with a trainer's name on it. Marked, never coloured differently:
+   it is the same kind of thing, made by a person. */
+.recipe-authored { border-style: dashed; }
+.recipe-open {
+  font: inherit;
+  font-size: var(--fz-xs);
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-left: none;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  padding: 0 8px;
+  cursor: pointer;
+}
+.recipe-open:hover { background: var(--sunken); color: var(--ink); }
+.recipe-open:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.recipe-grid { display: flex; flex-wrap: wrap; gap: var(--s-xs); }
+
+.ask {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-sm);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  padding: var(--s-sm) var(--s-sm) var(--s-sm) var(--s-md);
+}
+.ask:focus-within { box-shadow: var(--focus-ring); }
+.ask-input {
+  flex: 1;
+  font: inherit;
+  color: var(--ink);
+  background: none;
+  border: none;
+  resize: none;
+  min-height: 26px;
+  max-height: 180px;
+  field-sizing: content;
+}
+.ask-input:focus { outline: none; }
+.ask-mode {
+  font-size: var(--fz-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+.ask-send {
+  font: inherit;
+  line-height: 1;
+  color: var(--on-accent);
+  background: var(--navy);
+  border: none;
+  border-radius: 999px;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  cursor: pointer;
+}
+.ask-send:disabled { opacity: 0.35; cursor: not-allowed; }
+.ask-send:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* ---- a thread ----------------------------------------------------------- */
+.thread-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-md);
+  margin-bottom: var(--s-md);
+}
+.thread-mode { font-size: var(--fz-sm); color: var(--muted); }
+.coverage { margin: var(--s-xs) 0 0; font-size: var(--fz-sm); color: var(--muted); }
+
+/* ---- the recipe sheet ---------------------------------------------------- */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 12, 24, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-lg);
+  z-index: 20;
+}
+.sheet {
+  width: min(560px, 100%);
+  max-height: min(78dvh, 720px);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.sheet-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--s-sm) var(--s-sm) var(--s-sm) var(--s-lg);
+  border-bottom: 1px solid var(--line-2);
+}
+.sheet-kind { font-size: var(--fz-sm); font-weight: 600; }
+.sheet-body {
+  overflow-y: auto;
+  padding: var(--s-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-md);
+}
+.sheet-head { display: flex; flex-direction: column; gap: 2px; }
+.sheet-title { font-family: var(--display); font-size: var(--fz-xl); font-weight: 600; margin: 0; }
+.sheet-by { font-size: var(--fz-sm); color: var(--muted); }
+.sheet-desc { margin: 0; color: var(--ink-2); }
+.sheet-about {
+  background: var(--sunken);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  padding: var(--s-md);
+  font-size: var(--fz-sm);
+  color: var(--ink-2);
+}
+.sheet-about p { margin: 0; }
+.sheet-about-head { font-weight: 600; color: var(--ink); margin-bottom: 4px !important; }
+.sheet-prompt {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  padding: var(--s-md);
+}
+.sheet-prompt-head { margin: 0 0 var(--s-xs); font-size: var(--fz-sm); font-weight: 600; }
+.sheet-prompt-body {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--fz-xs);
+  line-height: 1.6;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+@media (max-width: 800px) {
+  .app { grid-template-columns: 1fr; }
+  .rail {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--s-md);
+    border-right: none;
+    border-bottom: 1px solid var(--line-2);
+    padding: var(--s-sm) var(--s-md);
+  }
+  .rail-brand { padding: 0; }
+  .rail-list { flex-direction: row; }
+  .rail-foot { margin-top: 0; margin-left: auto; }
+  .stream { padding: var(--s-lg) var(--s-md); }
+  .askbar { padding: var(--s-sm) var(--s-md) var(--s-md); }
+}

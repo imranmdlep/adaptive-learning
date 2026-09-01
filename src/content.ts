@@ -26,52 +26,123 @@ export const app = {
  * premium, the room is the best thing that happens here and it should read
  * that way, not as a date in a list. */
 export const home = {
-  /* with a session coming */
-  soonHead: (day: string) => `Before ${day}`,
-  soonHelp: 'Anything here is worth doing on its own. None of it is homework.',
-  todayHead: 'Before you go in',
-  todayHelp: 'Ten minutes now is worth more than an hour last week.',
-  /* the ordinary week, which is most weeks */
-  openHead: 'What is coming up for you?',
-  openHelp: 'Pick what fits the time you actually have.',
-  sessionEyebrow: 'Your session',
+  comingUp: 'Coming up',
+  /* Shown inside the coming up card when there is nothing in it. */
+  comingUpEmpty: 'Nothing booked. What you write below still lands here.',
   sessionWith: 'with',
-  /* the quiet list of what she has already done */
-  beenHead: 'What you have worked on',
+  /* The record. Her own trail, most recent first, and nothing else: no count,
+     no streak, no progress. None of those are true of conversations that keep
+     happening to a person. */
+  recordEmpty: 'Whatever you work on shows up here.',
+  today: 'Today',
+  yesterday: 'Yesterday',
 }
 
-/* The offers. Each one is a format with an honest time on it.
+export const rail = {
+  home: 'Home',
+  chat: 'Practice',
+}
+
+/* The second page. Home is where her week is; this is where she starts
+ * something. */
+export const chat = {
+  greet: (who: string) => (who ? `Hi ${who}, what is coming up?` : 'What is coming up?'),
+  recents: 'Recent',
+  recipes: 'Ways to work on it',
+  untitled: 'Untitled',
+}
+
+/* The ask bar, which is the only way in.
  *
- * This is the envelope, asked without a form. Tapping "Two minutes, pointers"
- * declares both the time available and the format wanted in one move, which is
- * the same signal a two question screen collected and one fewer thing standing
- * between someone and the thing they came for.
+ * A menu made someone choose a format before they had said anything, which is
+ * teaching before attempting and is backwards. Here they write what is actually
+ * happening, and the format is decided from that. */
+export const ask = {
+  placeholder: 'What is coming up?',
+  send: 'Send',
+  auto: 'Auto',
+  recipesLabel: 'Ways to work on it',
+  about: 'About',
+}
+
+/* The recipes: the same three formats, no longer a gate, plus the one that
+ * matters commercially.
  *
- * Neither is recommended and the order never changes, because which one people
- * reach for is the finding. */
-export const offers = [
-  {
-    mode: 'pointers' as const,
-    minutes: 'few' as const,
-    time: 'Two minutes',
-    title: 'Pointers for something specific',
-    blurb: 'For right before you walk into it.',
-  },
-  {
-    mode: 'quiz' as const,
-    minutes: 'some' as const,
-    time: 'Ten minutes',
-    title: 'Check what you remember',
-    blurb: 'Questions one at a time, answered in your own words.',
-  },
-  {
-    mode: 'conversation' as const,
-    minutes: 'proper' as const,
-    time: 'Twenty minutes',
-    title: 'Talk a real one through',
-    blurb: 'A conversation you have coming up, worked through properly.',
-  },
+ * Available on demand, never required. Auto picks unless somebody overrides it,
+ * and whether Auto's pick beats the one people choose for themselves is the
+ * finding. Order never changes and none is recommended.
+ *
+ * THE AUTHORED ONE. A recipe with a trainer's name on it is the human premium
+ * packaged: it scales the person who ran the room into the weeks afterwards
+ * without replacing them, and it gives the trainer surface something to be for,
+ * which is authoring these. Everyone named is invented; no real trainer's name
+ * goes on behaviour they did not do. */
+export const recipes = [
+  { mode: 'pointers' as const, label: 'Give me pointers' },
+  { mode: 'quiz' as const, label: 'Check what I remember' },
+  { mode: 'conversation' as const, label: 'Talk it through' },
 ]
+
+/* Offered only when a trainer has actually run a session for this person, so
+ * the name on it means something. */
+export type Authored = { mode: 'conversation'; label: string; by: string; note: string }
+
+export function authoredRecipe(trainer: string): Authored {
+  return {
+    mode: 'conversation',
+    label: `Coach me like ${trainer}`,
+    by: trainer,
+    note: 'The way she pushed in the room, on whatever you bring.',
+  }
+}
+
+/* The recipe sheet. */
+export const sheet = {
+  kind: 'Recipe',
+  by: 'Recipe by',
+  about: 'About',
+  prompt: 'What it does',
+  close: 'Close',
+}
+
+/* What each recipe says about itself. The prompt shown here is the real one,
+ * trimmed for reading; the full text lives in api/chat.ts, which is the only
+ * place it can be enforced. Showing it is a trust move, and it is the same
+ * craft rule the research left us: show what a claim came from. */
+export function recipeDetail(label: string, trainer?: string) {
+  if (trainer && label === `Coach me like ${trainer}`) {
+    return {
+      description:
+        `The way ${trainer} pushes in the room, on whatever you bring. Built from the feedback and coaching curriculum she teaches, not from a general idea of coaching.`,
+      about:
+        `${trainer} runs the feedback and coaching sessions. She wrote this so the way she works keeps going after the room, and she is who you get if you book another session.`,
+      prompt:
+        'Work the way she does in the room.\n\nDo not hand them the answer. Ask one question at a time and wait.\n\nSeparate what was observable from their interpretation of it, and make them do that separation themselves.\n\nWhen they get somewhere, say so plainly and move on.\n\nKeep your turns shorter than theirs.',
+    }
+  }
+  if (label === 'Give me pointers') {
+    return {
+      description: 'A handful of specific things to say or do, for right before you walk into it.',
+      about: '',
+      prompt:
+        'Give a handful of specific pointers for this exact situation.\n\nEach one on its own line, each one something they could actually say.\n\nNo preamble, no theory. Do not ask a question at the end.',
+    }
+  }
+  if (label === 'Check what I remember') {
+    return {
+      description: 'Questions one at a time, answered in your own words. Nothing scores you.',
+      about: '',
+      prompt:
+        'Ask one question at a time about handling this situation, and wait for the answer.\n\nAccept an answer that is right in substance and worded differently.\n\nAfter each answer say what was right in it and what was missing, about THAT ANSWER only. No score, no tally, nothing about how they are doing.',
+    }
+  }
+  return {
+    description: 'A conversation you have coming up, worked through properly.',
+    about: '',
+    prompt:
+      'Do not hand them the answer. Ask one question at a time and wait.\n\nIf they ask you to just tell them, give the smallest thing that unblocks them and put the next question back to them.\n\nKeep your turns shorter than theirs.',
+  }
+}
 
 export const pick = {
   ask: 'Which conversation?',
@@ -109,6 +180,16 @@ export const envelope = {
 }
 
 export const work = {
+  back: 'Back',
+  autoTag: ', chosen for you',
+  /* What this thread is drawing on. An honest count, and it says nothing when
+     there is nothing, rather than claiming context it does not have. */
+  coverage: (past: number) =>
+    past === 0
+      ? 'Working from what you just wrote. Nothing else yet.'
+      : past === 1
+      ? 'Working from what you wrote, and the one conversation before this.'
+      : `Working from what you wrote, and the ${past} conversations before this.`,
   send: 'Send',
   thinking: 'Working',
   done: 'Done',

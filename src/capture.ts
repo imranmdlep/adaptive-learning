@@ -42,7 +42,8 @@ export type Mode = 'conversation' | 'quiz' | 'pointers'
 export type Entry = {
   id: string
   who: string
-  /* The situation they picked. Q1 and Q2: which problem, at which point. */
+  /* The situation, when one was resolved from what they wrote. Absent when
+   * nothing in the library fits, which is itself worth knowing. */
   moduleId: string
   /* Their own words about the real instance of it, when they gave any. */
   working?: string
@@ -53,6 +54,9 @@ export type Entry = {
    * between the two is the only check we have on a self-reported answer, and
    * fusing them would destroy it before anyone had looked. Q3. */
   used?: Mode
+  /* Whether Auto picked the format or she reached for a recipe. The comparison
+   * between the two is the whole experiment, so it cannot be inferred later. */
+  auto?: boolean
   /* ---- observed ---------------------------------------------------------- */
   turns?: Turn[]
   /* Whether they reached the end of the interaction or left partway. Q2, Q3. */
@@ -125,7 +129,7 @@ export function clearOpen() {
   writeLocal(OPEN_KEY, null)
 }
 
-export type Envelope = { minutes: Minutes; wanted: Mode }
+export type Envelope = { minutes: Minutes; wanted: Mode; auto: boolean }
 
 export function startEntry(who: string, moduleId: string, working: string, env: Envelope): Entry {
   const entry: Entry = {
@@ -136,6 +140,7 @@ export function startEntry(who: string, moduleId: string, working: string, env: 
     minutes: env.minutes,
     wanted: env.wanted,
     used: env.wanted,
+    auto: env.auto,
     startedAt: new Date().toISOString(),
   }
   writeLocal(OPEN_KEY, entry)
@@ -155,7 +160,14 @@ export function updateOpen(patch: Partial<Entry>): Entry | null {
 /* Q4 lives here. Which situations someone has been through, in order, with
  * which format each time. Kept as a list rather than a count: the ORDER is the
  * thing worth knowing, and a count throws it away. */
-export type Past = { moduleId: string; used: Mode; at: string }
+export type Past = {
+  id: string
+  /* her own words about what she brought, which is what the row shows */
+  working: string
+  moduleId: string
+  used: Mode
+  at: string
+}
 
 export function getPast(): Past[] {
   return readLocal<Past[]>(DONE_KEY, [])
@@ -164,7 +176,13 @@ export function getPast(): Past[] {
 export function rememberPast(entry: Entry) {
   if (!entry.used) return
   const past = getPast()
-  past.push({ moduleId: entry.moduleId, used: entry.used, at: new Date().toISOString() })
+  past.push({
+    id: entry.id,
+    working: entry.working ?? '',
+    moduleId: entry.moduleId,
+    used: entry.used,
+    at: new Date().toISOString(),
+  })
   writeLocal(DONE_KEY, past)
 }
 

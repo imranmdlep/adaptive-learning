@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Asterisk } from '../brand'
-import type { Minutes, Mode, Turn } from '../capture'
+import type { Mode, Turn } from '../capture'
 import { getKey } from '../capture'
-import type { Module } from '../modules'
+import { moduleById } from '../modules'
 import { modes, work } from '../content'
 
 /* Appended by api/chat.ts when the stream breaks after it has already started.
@@ -16,27 +16,32 @@ const FAILED_MARKER = ' STREAM_FAILED'
  * because the only thing this screen needs is the text. The transcript is
  * lifted to the parent after every exchange so a closed tab loses nothing. */
 export default function Work({
-  module: mod,
+  moduleId,
   mode,
-  minutes,
+  auto,
+  past,
   working,
   turns,
   onTurns,
   onDone,
+  onBack,
 }: {
-  /* the situation they picked, which is what the assistant works from */
-  module: Module
-  /* which of the three ways of working this is */
+  /* the situation resolved from what they wrote, never shown as a skill */
+  moduleId: string
   mode: Mode
-  /* what they said they had time for, which sets how long a reply runs */
-  minutes: Minutes
-  /* their own line about their instance of it, when they gave one */
-  working?: string
+  /* whether the format was chosen for them, which the header says out loud */
+  auto: boolean
+  /* how many threads are behind this one, for the coverage line */
+  past: number
+  /* their own words, which is the thread's title */
+  working: string
   turns: Turn[]
   onTurns: (t: Turn[]) => void
   onDone: () => void
+  onBack: () => void
 }) {
   const copy = modes[mode]
+  const mod = moduleById(moduleId)
   const [draft, setDraft] = useState('')
   const [streaming, setStreaming] = useState('')
   const [busy, setBusy] = useState(false)
@@ -71,9 +76,8 @@ export default function Work({
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-app-key': getKey() },
         body: JSON.stringify({
-          moduleId: mod.id,
+          moduleId,
           mode,
-          minutes,
           working: working || undefined,
           messages: next,
         }),
@@ -123,11 +127,20 @@ export default function Work({
 
   return (
     <section>
+      <div className="thread-bar">
+        <button className="btn btn-subtle" type="button" onClick={onBack}>{work.back}</button>
+        {/* Says which way of working this is, and whether it was chosen for
+            them. Machinery that picks something should name itself. */}
+        <span className="thread-mode">{copy.head}{auto ? work.autoTag : ''}</span>
+      </div>
+
       <div className="recall">
-        <div className="eyebrow">{copy.head}</div>
-        {/* Their situation, and their own line about it when they gave one.
-            Their words, never ours summarising them back. */}
-        <p className="recall-said">{working || mod.title}</p>
+        {/* Their own words are the title. Never ours summarising them back. */}
+        <p className="recall-said">{working || mod?.title}</p>
+        {/* What this is drawing on, and what it is not. Saying so is why it
+            reads as knowing rather than guessing, and it is the same rule the
+            research left us: show what a claim came from. */}
+        <p className="coverage">{work.coverage(past)}</p>
       </div>
 
       <div className="thread">

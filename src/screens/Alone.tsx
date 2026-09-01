@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import type { Module } from '../modules'
 import { alone } from '../content'
 
 /* One go at it with nothing helping.
@@ -15,11 +14,12 @@ import { alone } from '../content'
  * nobody is told how they did. Skipping is one tap, and a skip is itself worth
  * knowing, so it is recorded rather than treated as nothing happening. */
 export default function Alone({
-  module: mod,
+  working,
   onNext,
   onSkip,
 }: {
-  module: Module
+  /* their own words, shown back so the line they write is for THAT situation */
+  working: string
   onNext: (text: string) => void
   onSkip: () => void
 }) {
@@ -27,7 +27,7 @@ export default function Alone({
 
   return (
     <section>
-      <div className="eyebrow">{mod.title}</div>
+      <div className="eyebrow">{working}</div>
       <h1 className="h1">{alone.ask}</h1>
       <p className="lead">{alone.help}</p>
 

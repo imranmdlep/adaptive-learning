@@ -126,3 +126,29 @@ Silence after a question is working. Filling it is the habit to break.`,
 export function moduleById(id: string): Module | undefined {
   return MODULES.find((m) => m.id === id)
 }
+
+/* Which situation somebody is in, worked out from the sentence they wrote
+ * rather than chosen from a list.
+ *
+ * Deliberately crude: word overlap, first match wins, and a default when
+ * nothing hits. A better resolver is a model call, and that is worth doing once
+ * we know people write sentences worth resolving. Getting this wrong is cheap,
+ * because the assistant reads their actual words too and the situation only
+ * sets which substance it works from. */
+const CUES: Record<ModuleId, string[]> = {
+  'missing-the-mark': ['again', 'still', 'keeps', 'same mistake', 'sloppy', 'late', 'quality', 'missed'],
+  'wont-want-to-hear': ['no', 'reject', 'turn down', 'bad news', 'decline', 'cut', 'push back', 'deadline'],
+  'got-heated': ['heated', 'argument', 'row', 'snapped', 'awkward', 'tense', 'upset', 'angry'],
+  'five-minutes': ['pitch', 'present', 'exec', 'board', 'five minutes', 'quick', 'stakeholder', 'decision'],
+  'jumped-to-solving': ['listen', 'vent', 'advice', 'solve', 'jumped in', 'sounding board', 'coach'],
+}
+
+export function pickModule(text: string): ModuleId {
+  const t = text.toLowerCase()
+  for (const m of MODULES) {
+    if (CUES[m.id].some((c) => t.includes(c))) return m.id
+  }
+  /* Nothing matched. The most common conversation people bring is the one they
+   * have been avoiding, so that is the honest default. */
+  return 'wont-want-to-hear'
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { Entry, Minutes, Mode, Past, Turn } from './capture'
+import type { Entry, Mode, Past, Turn } from './capture'
 import {
   clearOpen,
   getOpen,
@@ -7,56 +7,47 @@ import {
   getWho,
   rememberPast,
   send,
-  setWho,
   startEntry,
   updateOpen,
 } from './capture'
 import { Wordmark } from './brand'
-import { app } from './content'
-import { moduleById } from './modules'
+import { app, rail } from './content'
+import { pickModule } from './modules'
 import type { Session } from './session'
 import { getSession } from './session'
+import RecipeSheet from './parts/RecipeSheet'
 import Alone from './screens/Alone'
+import Chat from './screens/Chat'
 import Home from './screens/Home'
 import Landed from './screens/Landed'
-import Pick from './screens/Pick'
 import Work from './screens/Work'
 
-/* The whole flow, and it is deliberately short:
+/* Two pages in the rail, and everything else is a thread.
  *
- *   pick        a situation from your own week
- *   envelope    how long you have, what you want, optionally your own case
- *   work        that format, on that situation
- *   alone       one go with nothing helping
- *   landed      saved, come back any time
+ *   Home       her week: the session coming up, and her own record below it
+ *   Practice   a greeting, one input, what she was last in, the recipes
  *
- * There is no course, no lesson and no completion. Someone can arrive with
- * three minutes and leave having done something real with three minutes, which
- * is the thing the research says the weeks after a class actually need.
+ * Writing a sentence in either bar opens a thread. There is no format menu and
+ * no situation picker: what she typed decides which situation this is, and Auto
+ * decides the format unless she reached for a recipe. Making somebody choose a
+ * format before they have said anything is teaching before attempting, which is
+ * the wrong way round.
  *
- * WHAT THIS BUILD IS FOR. It is an instrument before it is a product: it
- * exists to find out which format fits which problem, and whether what people
- * ask for is what helps them. That is why nothing here is recommended or
- * preselected. */
-type Screen =
-  | { kind: 'home' }
-  /* She has already said what she wants and how long she has, by tapping an
-   * offer. Those ride on the screen until there is an entry to write them to. */
-  | { kind: 'pick'; mode: Mode; minutes: Minutes }
-  | { kind: 'work' }
-  | { kind: 'alone' }
-  | { kind: 'landed' }
+ * A thread ends with one go at it alone, which is the only signal here that
+ * separates learning from copying. Then it lands in her record. */
+type Page = 'home' | 'chat'
+type Screen = { kind: 'page' } | { kind: 'work' } | { kind: 'alone' } | { kind: 'landed' }
 
 export default function App() {
-  const [who, setWhoState] = useState(getWho)
+  const [who] = useState(getWho)
   const [open, setOpen] = useState<Entry | null>(getOpen)
   const [past, setPast] = useState<Past[]>(getPast)
+  const [page, setPage] = useState<Page>('home')
+  const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'page' }))
+  const [sheet, setSheet] = useState<string | null>(null)
   const [dark, setDark] = useState<boolean | null>(null)
-  /* A session left open resumes where it was, so closing a tab mid-conversation
-   * costs nobody their thread. */
-  const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'home' }))
-  /* Lepaya scheduled the session, so Lepaya knows when it is. Reading it here
-   * rather than asking is the whole of what makes the first screen adaptive. */
+  /* Lepaya scheduled the session, so Lepaya knows when it is. Reading it rather
+   * than asking is the whole of what makes the first screen adaptive. */
   const [session] = useState<Session | null>(getSession)
 
   useEffect(() => {
@@ -64,20 +55,19 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
   }, [dark])
 
-  /* Tapping an offer declares the format and the time in one move. Recorded
-   * here, before she has picked a conversation, so somebody who taps an offer
-   * and then backs out still tells us what they reached for. */
-  function onOffer(name: string, mode: Mode, minutes: Minutes) {
-    setWho(name)
-    setWhoState(name)
-    void send('offer', { who: name, wanted: mode, minutes, hasSession: !!session })
-    setScreen({ kind: 'pick', mode, minutes })
-  }
-
-  function onPicked(mode: Mode, minutes: Minutes, moduleId: string, working: string) {
-    const entry = startEntry(who, moduleId, working, { minutes, wanted: mode })
+  /* One sentence is the whole entry point. The situation is resolved from what
+   * she wrote rather than chosen from a list, and `auto` means the format was
+   * decided for her rather than reached for. */
+  function onAsk(text: string, mode: Mode | 'auto') {
+    const moduleId = pickModule(text)
+    const wanted: Mode = mode === 'auto' ? 'conversation' : mode
+    const entry = startEntry(who, moduleId, text, {
+      minutes: 'some',
+      wanted,
+      auto: mode === 'auto',
+    })
     setOpen(entry)
-    void send('started', entry)
+    void send('asked', entry)
     setScreen({ kind: 'work' })
   }
 
@@ -108,62 +98,90 @@ export default function App() {
     setScreen({ kind: 'landed' })
   }
 
-  function goHome() {
-    setScreen({ kind: 'home' })
+  function goPage(p: Page) {
+    setPage(p)
+    setScreen({ kind: 'page' })
   }
 
-  function screenContent() {
-    if (screen.kind === 'home') {
-      return <Home who={who} session={session} past={past} onOffer={onOffer} />
-    }
-    if (screen.kind === 'pick') {
-      const { mode, minutes } = screen
+  function renderPage() {
+    if (page === 'chat') {
       return (
-        <Pick
-          onNext={(moduleId, working) => onPicked(mode, minutes, moduleId, working)}
-          onBack={goHome}
+        <Chat
+          who={who}
+          session={session}
+          past={past}
+          onAsk={onAsk}
+          onOpen={() => setScreen({ kind: 'page' })}
+          onRecipe={setSheet}
         />
       )
     }
-    if (screen.kind === 'landed') {
-      return <Landed onAnother={goHome} />
-    }
-
-    /* work and alone both need the open session; without one there is nothing
-     * to show, so fall back to the front door rather than rendering empty. */
-    const mod = open ? moduleById(open.moduleId) : undefined
-    if (!open || !mod || !open.used || !open.minutes) {
-      return <Home who={who} session={session} past={past} onOffer={onOffer} />
-    }
-
-    if (screen.kind === 'alone') {
-      return (
-        <Alone
-          module={mod}
-          onNext={(text) => finish({ unassisted: text })}
-          onSkip={() => finish({ unassistedSkipped: true })}
-        />
-      )
-    }
-
     return (
-      <Work
-        module={mod}
-        mode={open.used}
-        minutes={open.minutes}
-        working={open.working}
-        turns={open.turns ?? []}
-        onTurns={onTurns}
-        onDone={onDone}
+      <Home
+        session={session}
+        past={past}
+        onAsk={onAsk}
+        onOpen={() => setScreen({ kind: 'page' })}
+        onRecipe={setSheet}
       />
     )
   }
 
+  function content() {
+    if (screen.kind === 'landed') {
+      return <Landed onAnother={() => setScreen({ kind: 'page' })} />
+    }
+
+    if (screen.kind === 'work' || screen.kind === 'alone') {
+      /* Without an open thread there is nothing to show, so fall back to her own
+         page rather than rendering an empty conversation. */
+      if (!open || !open.used) return renderPage()
+      if (screen.kind === 'alone') {
+        return (
+          <Alone
+            working={open.working ?? ''}
+            onNext={(text) => finish({ unassisted: text })}
+            onSkip={() => finish({ unassistedSkipped: true })}
+          />
+        )
+      }
+      return (
+        <Work
+          moduleId={open.moduleId}
+          mode={open.used}
+          auto={open.auto ?? false}
+          past={past.length}
+          working={open.working ?? ''}
+          turns={open.turns ?? []}
+          onTurns={onTurns}
+          onDone={onDone}
+          onBack={() => setScreen({ kind: 'page' })}
+        />
+      )
+    }
+
+    return renderPage()
+  }
+
   return (
     <div className="app">
-      <header className="topbar">
-        <span className="brand"><Wordmark /></span>
-        <div className="topbar-right">
+      <nav className="rail" aria-label={app.name}>
+        <span className="rail-brand"><Wordmark /></span>
+        <ul className="rail-list">
+          {(['home', 'chat'] as const).map((p) => (
+            <li key={p}>
+              <button
+                type="button"
+                className={`rail-item${page === p && screen.kind === 'page' ? ' rail-on' : ''}`}
+                aria-current={page === p && screen.kind === 'page' ? 'page' : undefined}
+                onClick={() => goPage(p)}
+              >
+                {rail[p]}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="rail-foot">
           {who && <span className="whoami">{who}</span>}
           <button
             className="icon-btn"
@@ -177,11 +195,11 @@ export default function App() {
             ◐
           </button>
         </div>
-      </header>
+      </nav>
 
-      <main className="main">{screenContent()}</main>
+      <main className="main">{content()}</main>
 
-      <footer className="footnote">{app.pilot}</footer>
+      {sheet && <RecipeSheet label={sheet} session={session} onClose={() => setSheet(null)} />}
     </div>
   )
 }
