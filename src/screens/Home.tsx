@@ -1,10 +1,9 @@
 import type { Mode, Past, Plan } from '../capture'
 import type { Session } from '../session'
-import { home, recipes } from '../content'
+import { home } from '../content'
 import { moduleById } from '../modules'
 import { SKILL_ICON, SKILL_ORDER } from '../skills'
 import { SKILLS } from '../taxonomy'
-import AskBar from '../parts/AskBar'
 import ComingUp from '../parts/ComingUp'
 import Record from '../parts/Record'
 
@@ -29,31 +28,28 @@ export default function Home({
   past,
   onAsk,
   onOpen,
-  onRecipe,
 }: {
   session: Session | null
   plans: Plan[]
   past: Past[]
   onAsk: (text: string, mode: Mode | 'auto') => void
   onOpen: (id: string) => void
-  onRecipe: (label: string) => void
 }) {
   /* Which skills her own threads have touched, derived rather than stored, so
      nothing has to be kept in sync and nothing accumulates into a profile. */
   const pursuing = new Set(past.flatMap((p) => moduleById(p.moduleId)?.skills ?? []))
 
   return (
-    <>
-      <div className="stream">
-        <ComingUp
-          plans={plans}
-          session={session}
-          onFollowUp={(p) => onAsk(home.followUpAsk(p.what), 'conversation')}
-          onPrepare={(p) => onAsk(p.what, 'auto')}
-        />
+    <div className="stream">
+      <ComingUp
+        plans={plans}
+        session={session}
+        onFollowUp={(p) => onAsk(home.followUpAsk(p.what), 'conversation')}
+        onPrepare={(p) => onAsk(p.what, 'auto')}
+      />
 
-        <section className="block">
-          <h2 className="block-sub">{home.skills}</h2>
+      <section className="block">
+        <h2 className="block-sub">{home.skills}</h2>
         <div className="skills">
           {SKILL_ORDER.map((id) => {
             const Icon = SKILL_ICON[id]
@@ -84,16 +80,12 @@ export default function Home({
         </button>
       </section>
 
-        {past.length > 0 && (
-          <section className="block">
-            <h2 className="block-sub">{home.recordHead}</h2>
-            <Record past={past} onOpen={onOpen} />
-          </section>
-        )}
-      </div>
-
-      {/* Pinned. One input, in the same place, on every screen it appears. */}
-      <AskBar recipes={recipes} onAsk={onAsk} onRecipe={onRecipe} />
-    </>
+      {past.length > 0 && (
+        <section className="block">
+          <h2 className="block-sub">{home.recordHead}</h2>
+          <Record past={past} onOpen={onOpen} />
+        </section>
+      )}
+    </div>
   )
 }

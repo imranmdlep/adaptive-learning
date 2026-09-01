@@ -23,7 +23,9 @@ export default function Work({
   working,
   turns,
   onTurns,
-  onDone,
+  outbox,
+  onBusy,
+  onEnd,
   onMode,
 }: {
   /* the situation resolved from what they wrote, never shown as a skill */
@@ -37,13 +39,20 @@ export default function Work({
   working: string
   turns: Turn[]
   onTurns: (t: Turn[]) => void
-  onDone: () => void
+  /* Bumped by the shell each time the docked bar sends. The thread owns the
+   * streaming, the bar owns the typing, and neither draws the other's chrome. */
+  outbox: { text: string; n: number }
+  /* The bar has no send button to disable, so it is told when a reply is on
+   * its way and says so itself. */
+  onBusy: (b: boolean) => void
+  /* Offered inside the conversation once there is one, never as a button in
+   * the chrome. Ending a thread is a thing she decides, not a control. */
+  onEnd: () => void
   /* told what Auto actually chose, once the server has chosen it */
   onMode: (m: Mode) => void
 }) {
   const copy = modes[mode]
   const mod = moduleById(moduleId)
-  const [draft, setDraft] = useState('')
   const [streaming, setStreaming] = useState('')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -59,27 +68,25 @@ export default function Work({
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [turns.length, streaming])
 
-  /* What they wrote on the way in is the opening turn, sent for them.
-   *
-   * Without this the thread opened with an empty transcript and waited, which
-   * reads as the app having ignored the sentence they just typed. The guard is
-   * a ref rather than state because React runs effects twice in development and
-   * a duplicate opening turn is not recoverable. */
-  const opened = useRef(false)
+  /* Every send arrives the same way: the opening line the shell handed over,
+   * and every line typed into the docked bar afterwards. The ref guard is
+   * because React runs effects twice in development and a duplicated turn is
+   * not recoverable. */
+  const sent = useRef(0)
   useEffect(() => {
-    if (opened.current || turns.length > 0 || !working.trim()) return
-    opened.current = true
-    void send(working.trim())
-  }, [])
+    if (outbox.n === sent.current || !outbox.text.trim()) return
+    sent.current = outbox.n
+    void send(outbox.text.trim())
+  }, [outbox.n])
 
-  async function send(given?: string) {
-    const text = (given ?? draft).trim()
+  async function send(given: string) {
+    const text = given.trim()
     if (!text || busy) return
 
     const next: Turn[] = [...turns, { role: 'user', content: text }]
     onTurns(next)
-    setDraft('')
     setBusy(true)
+    onBusy(true)
     setFailed(false)
     setNoKey(false)
     setRefused('')
@@ -104,15 +111,13 @@ export default function Work({
 
       if (res.status === 401) {
         setNoKey(true)
-        setDraft(text)
-        onTurns(turns)
+          onTurns(turns)
         return
       }
       if (!res.ok) {
         const said = (await res.text()).trim().slice(0, 200)
         setRefused(said || work.failed)
-        setDraft(text)
-        onTurns(turns)
+          onTurns(turns)
         return
       }
       if (!res.body) throw new Error('no body')
@@ -136,12 +141,11 @@ export default function Work({
     } catch (err) {
       console.warn('[work] send failed', err)
       setFailed(true)
-      /* drop the user turn back into the box so nothing they typed is lost */
-      setDraft(text)
       onTurns(turns)
     } finally {
       setStreaming('')
       setBusy(false)
+      onBusy(false)
     }
   }
 
@@ -192,44 +196,19 @@ export default function Work({
         <div ref={endRef} />
       </div>
 
+      {/* Once there has been a real exchange, the next useful thing is naming
+          when she is actually having it. Offered as a line in the conversation
+          rather than a button in the toolbar, because it is a step forward and
+          not a way to dismiss something. */}
+      {!busy && turns.filter((t) => t.role === 'assistant').length >= 1 && (
+        <button type="button" className="thread-next" onClick={onEnd}>
+          {work.plan}
+        </button>
+      )}
+
       {failed && <p className="field-note field-error">{work.failed}</p>}
       {refused && <p className="field-note field-error">{refused}</p>}
       {noKey && <p className="field-note field-error">{work.noKey}</p>}
-
-      <div className="field">
-        <label className="visually-hidden" htmlFor="draft">{copy.placeholder}</label>
-        <textarea
-          id="draft"
-          className="area"
-          rows={3}
-          value={draft}
-          placeholder={copy.placeholder}
-          disabled={busy}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-              e.preventDefault()
-              void send()
-            }
-          }}
-        />
-      </div>
-
-      <div className="actions">
-        <button
-          className="btn btn-lg btn-primary"
-          type="button"
-          disabled={!draft.trim() || busy}
-          onClick={() => void send()}
-        >
-          {work.send}
-        </button>
-        {turns.length > 0 && !busy && (
-          <button className="btn btn-subtle" type="button" onClick={onDone}>
-            {work.done}
-          </button>
-        )}
-      </div>
     </section>
   )
 }

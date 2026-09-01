@@ -278,17 +278,25 @@ body {
   background: var(--selected);
 }
 
+/* No ring. A bordered circle around a 16px glyph is a shape competing with the
+   glyph, and there are no other pill controls at this size for it to belong
+   to. The hit area stays the full 40px; only the drawing goes. */
 .icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   height: var(--ctl-md);
   width: var(--ctl-md);
-  border-radius: var(--r-pill);
-  border: 1px solid var(--line-strong);
-  background: var(--surface);
-  color: var(--ink);
+  border: none;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--muted);
   cursor: pointer;
   font-family: var(--body);
   font-size: var(--fz-md);
 }
+.icon-btn:hover { background: var(--sunken); color: var(--ink); }
+.icon-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
 .icon-btn:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
@@ -1303,69 +1311,97 @@ body {
 .record-skill svg { color: var(--muted); flex: none; }
 .record-group + .record-group { margin-top: var(--s-lg); }
 
+
 /* ==========================================================================
-   A THREAD OPENS OVER HOME, NEVER INSTEAD OF IT.
-   Replacing the page flattens the hierarchy: home disappears, every screen
-   sits at the same level, and somebody who followed one thought has lost the
-   place they were standing.
+   THE DOCK. The bar and the thread are one thing.
+   A thread used to open as a dialog over a dimmed page, which is heavier than
+   what is happening: somebody typed a sentence and got an answer. The bar
+   grows upward instead, the input stays exactly where it already was, and the
+   page behind stays fully lit because it was never interrupted.
    ========================================================================== */
-.panel-scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 12, 24, 0.32);
-  z-index: 10;
-}
-.panel {
+.dock {
   position: absolute;
   z-index: 11;
-  /* Room on every side. A sheet touching one edge and floating on the others
-     reads as half attached; a card with a margin all round reads as sitting on
-     top of the page, which is what it is doing. */
   left: 50%;
   transform: translateX(-50%);
-  bottom: var(--s-lg);
-  width: min(860px, calc(100% - var(--s-lg) * 2));
-  /* Stops short of the top so the page behind is still legibly there. */
-  max-height: calc(100% - var(--s-lg) * 2);
+  bottom: 0;
+  width: min(760px, calc(100% - var(--s-lg) * 2));
   display: flex;
   flex-direction: column;
+  max-height: calc(100% - var(--s-xl));
+}
+/* Collapsed it is a bar with nothing behind it. Open it is a card, and the
+   card is what tells you the conversation is a place rather than a message. */
+.dock-open {
   background: var(--surface);
   border: 1px solid var(--line-2);
-  border-radius: var(--r-md);
+  border-bottom: none;
+  border-radius: var(--r-md) var(--r-md) 0 0;
   box-shadow: var(--shadow);
   overflow: hidden;
 }
-.panel-bar {
+.dock-bar {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: var(--s-xs);
   flex: none;
-  padding: var(--s-xs);
-  border-bottom: 1px solid var(--line-2);
+  padding: var(--s-xs) var(--s-xs) 0;
 }
-.panel-body {
+.dock-body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--s-lg);
-}
-.panel-body > section { max-width: 640px; margin-inline: auto; }
-
-/* Inside the panel the mode label sits above the title rather than opposite a
-   Back button the panel now owns. */
-.thread-head .thread-mode {
-  margin: 0 0 var(--s-xs);
-  font-family: var(--mono);
-  font-size: var(--fz-2xs);
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
+  padding: 0 var(--s-lg) var(--s-md);
 }
 
-/* main becomes the positioning context for both. */
+/* Inside the dock the card already carries the chrome. */
+.askbar-docked {
+  flex: none;
+  border-top: none;
+  background: none;
+  padding: var(--s-sm) var(--s-md) var(--s-md);
+  display: block;
+}
+.dock-open .askbar-docked { padding-top: 0; }
+/* The chips only make sense before a thread exists; inside one the mode is
+   already set and shown at the top. */
+.dock-open .recipes { display: none; }
+
+/* main is the positioning context. */
 .main { position: relative; overflow: hidden; }
+/* The scrolling column clears the collapsed bar. */
+.stream { padding-bottom: var(--s-2xl); }
 
 @media (max-width: 800px) {
-  .panel { inset: var(--s-sm); top: auto; width: auto; max-height: calc(100% - var(--s-sm) * 2); }
+  .dock { width: calc(100% - var(--s-sm) * 2); }
 }
+
+/* No send button. Enter sends, so the row has to say when a reply is coming,
+   because a control that is simply absent cannot go into a pending state. */
+.ask-busy {
+  font-size: var(--fz-xs);
+  color: var(--muted);
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+
+/* Taller when somebody wants to read rather than glance. */
+.dock-big { max-height: calc(100% - var(--s-md)); height: calc(100% - var(--s-md)); }
+
+/* The way on from a thread, in the conversation rather than in the chrome.
+   It is a step forward, not a way to dismiss something. */
+.thread-next {
+  display: inline-block;
+  margin-top: var(--s-md);
+  font: inherit;
+  font-size: var(--fz-sm);
+  color: var(--link);
+  background: none;
+  border: none;
+  border-bottom: 1px solid currentColor;
+  padding: 0 0 1px;
+  cursor: pointer;
+}
+.thread-next:hover { color: var(--ink); }
+.thread-next:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 2px; }

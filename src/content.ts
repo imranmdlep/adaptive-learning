@@ -15,6 +15,9 @@ export const app = {
   theme: 'Switch theme',
   back: 'Back',
   close: 'Close',
+  collapse: 'Fold this back down',
+  expand: 'Make this taller',
+  shrink: 'Make this smaller',
 }
 
 /* The landing, in both states.
@@ -100,7 +103,7 @@ export const chat = {
 export const ask = {
   placeholder: 'What is coming up?',
   send: 'Send',
-  auto: 'Auto',
+  working: 'Working',
   recipesLabel: 'Ways to work on it',
   about: 'About',
 }
@@ -143,6 +146,9 @@ export const sheet = {
   about: 'About',
   prompt: 'What it does',
   close: 'Close',
+  collapse: 'Fold this back down',
+  expand: 'Make this taller',
+  shrink: 'Make this smaller',
 }
 
 /* What each recipe says about itself. The prompt shown here is the real one,
@@ -222,6 +228,9 @@ export const envelope = {
 export const work = {
   back: 'Back',
   close: 'Close',
+  collapse: 'Fold this back down',
+  expand: 'Make this taller',
+  shrink: 'Make this smaller',
   autoTag: ', chosen for you',
   /* What this thread is drawing on. An honest count, and it says nothing when
      there is nothing, rather than claiming context it does not have. */
@@ -234,6 +243,7 @@ export const work = {
   send: 'Send',
   thinking: 'Working',
   done: 'Done',
+  plan: 'Ready to say when you are having it',
   failed: 'That reply did not finish. Send again.',
   noKey: 'Open the full link you were sent.',
   you: 'You',

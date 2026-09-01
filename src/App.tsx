@@ -12,11 +12,17 @@ import {
   startEntry,
   updateOpen,
 } from './capture'
+import {
+  IconArrowsDiagonal,
+  IconArrowsDiagonalMinimize2,
+  IconChevronDown,
+} from '@tabler/icons-react'
 import { Wordmark } from './brand'
 import { app, rail } from './content'
 import { pickModule } from './modules'
 import type { Session } from './session'
 import { getSession } from './session'
+import AskBar from './parts/AskBar'
 import RecipeSheet from './parts/RecipeSheet'
 import Alone from './screens/Alone'
 import Home from './screens/Home'
@@ -46,6 +52,13 @@ export default function App() {
   const [plans, setPlans] = useState<Plan[]>(getPlans)
   const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'page' }))
   const [sheet, setSheet] = useState<string | null>(null)
+  /* What the docked bar has sent. The bar owns the typing, the thread owns the
+   * streaming, and neither draws the other's chrome. */
+  const [outbox, setOutbox] = useState({ text: '', n: 0 })
+  /* A thread starts at the size of the bar it grew out of, and can be taken
+   * full height when somebody wants to read rather than glance. */
+  const [big, setBig] = useState(false)
+  const [busy, setBusy] = useState(false)
   const [dark, setDark] = useState<boolean | null>(null)
   /* Lepaya scheduled the session, so Lepaya knows when it is. Reading it rather
    * than asking is the whole of what makes the first screen adaptive. */
@@ -59,6 +72,16 @@ export default function App() {
   /* One sentence is the whole entry point. The situation is resolved from what
    * she wrote rather than chosen from a list, and `auto` means the format was
    * decided for her rather than reached for. */
+  /* Typing into the bar continues the open thread, or starts one if there is
+   * none. One input, and what it does depends only on where you already are. */
+  function onBar(text: string, mode: Mode | 'auto') {
+    if (screen.kind === 'work' && open) {
+      setOutbox((o) => ({ text, n: o.n + 1 }))
+      return
+    }
+    onAsk(text, mode)
+  }
+
   function onAsk(text: string, mode: Mode | 'auto') {
     const moduleId = pickModule(text)
     const wanted: Mode = mode === 'auto' ? 'conversation' : mode
@@ -69,6 +92,7 @@ export default function App() {
     })
     setOpen(entry)
     void send('asked', entry)
+    setOutbox({ text, n: 0 })
     setScreen({ kind: 'work' })
   }
 
@@ -120,7 +144,6 @@ export default function App() {
         past={past}
         onAsk={onAsk}
         onOpen={() => setScreen({ kind: 'page' })}
-        onRecipe={setSheet}
       />
     )
   }
@@ -164,7 +187,9 @@ export default function App() {
           working={open.working ?? ''}
           turns={open.turns ?? []}
           onTurns={onTurns}
-          onDone={onDone}
+          outbox={outbox}
+          onBusy={setBusy}
+          onEnd={onDone}
           onMode={onMode}
         />
       )
@@ -210,26 +235,44 @@ export default function App() {
           rendering straight into the shell, which is what made it full bleed. */}
       <main className="main">
         {renderPage()}
-        {screen.kind !== 'page' && (
-          <>
-            {/* Dims what is behind without hiding it, so the page is still
-                legibly there and closing reads as returning. */}
-            <div className="panel-scrim" onClick={goHome} />
-            <div className="panel" role="dialog" aria-modal="true">
-              <div className="panel-bar">
+
+        {/* THE DOCK. The bar and the thread are one thing: the bar grows
+            upward into the conversation and the input stays where it already
+            was. It is not a dialog. There is no scrim, the page behind stays
+            fully lit, and closing collapses it back to a bar rather than
+            dismissing a window. */}
+        <div className={`dock${screen.kind === 'page' ? '' : ' dock-open'}${big ? ' dock-big' : ''}`}>
+          {screen.kind !== 'page' && (
+            <>
+              <div className="dock-bar">
+                {/* Two controls, and neither of them closes anything. The
+                    chevron folds the thread back down into the bar it grew out
+                    of; the diagonal takes it taller for reading. Nothing is
+                    dismissed either way, because the thread is in the record. */}
                 <button
                   type="button"
                   className="icon-btn"
-                  aria-label={app.close}
-                  onClick={goHome}
+                  aria-label={app.collapse}
+                  onClick={() => { setBig(false); goHome() }}
                 >
-                  {'✕'}
+                  <IconChevronDown size={17} stroke={1.6} aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={big ? app.shrink : app.expand}
+                  onClick={() => setBig((v) => !v)}
+                >
+                  {big
+                    ? <IconArrowsDiagonalMinimize2 size={16} stroke={1.6} aria-hidden />
+                    : <IconArrowsDiagonal size={16} stroke={1.6} aria-hidden />}
                 </button>
               </div>
-              <div className="panel-body">{panel()}</div>
-            </div>
-          </>
-        )}
+              <div className="dock-body">{panel()}</div>
+            </>
+          )}
+          <AskBar onAsk={onBar} busy={busy} docked />
+        </div>
       </main>
 
       {sheet && <RecipeSheet label={sheet} session={session} onClose={() => setSheet(null)} />}
