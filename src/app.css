@@ -948,7 +948,15 @@ body {
   border-radius: var(--r-md);
   padding: var(--s-sm) var(--s-sm) var(--s-sm) var(--s-md);
 }
-.ask:focus-within { box-shadow: var(--focus-ring); }
+/* The border itself takes the focus colour rather than a ring being drawn
+   outside it. A 2px shadow around a 1px border stacks two edges, which on a
+   large rounded field reads as a blue control instead of a focused one.
+   Blurple is still the DS focus colour and the indicator is still 2px, so this
+   is the same rule expressed in one edge instead of two. */
+.ask:focus-within {
+  border-color: var(--blurple);
+  box-shadow: inset 0 0 0 1px var(--blurple);
+}
 .ask-input {
   flex: 1;
   font: inherit;
