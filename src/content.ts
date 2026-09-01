@@ -34,8 +34,14 @@ export const app = {
  *
  * So Home is a library she picks from, and the room lives on Practice. */
 export const home = {
-  head: 'What do you want to get better at?',
-  help: 'Pick one, or just write what is on your plate.',
+  head: 'What is on your plate?',
+  skills: 'Or pick something to pursue',
+  unsure: 'Not sure yet',
+  unsureCta: 'Help me work out what to focus on',
+  /* Sent as the opening turn, so the thread starts as a conversation about
+     them rather than as an empty box they have to fill. */
+  unsureAsk:
+    'I am not sure what I want to get better at. Help me work it out from what my week actually looks like.',
   /* The record. Her own trail, most recent first, and nothing else: no count,
      no streak, no progress. None of those are true of conversations that keep
      happening to a person. */

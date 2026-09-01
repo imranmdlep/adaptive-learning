@@ -1158,3 +1158,43 @@ body {
   line-height: 1.6;
   max-width: 56ch;
 }
+
+/* ---- skills, as marks you can pursue -------------------------------------
+   Chips, not cards. The front door used to be five heavy boxes, which is a
+   wall to read before you can do anything.
+
+   Nothing here shows a level, a score or progress, and the marked state says
+   only that someone has been here. Pursuing a skill is going after something,
+   never admitting to a shortfall, so there is no filled bar and no tick. */
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-xs);
+}
+.skill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font: inherit;
+  font-size: var(--fz-sm);
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 6px var(--s-sm);
+  min-height: 34px;
+  cursor: pointer;
+}
+.skill svg { color: var(--muted); flex: none; }
+.skill:hover { background: var(--sunken); color: var(--ink); }
+.skill:hover svg { color: var(--ink-2); }
+.skill:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+/* Already pursued. The mark goes on the ICON, not on the label, so the row
+   still reads as a thing to do rather than as a record of what you did. */
+.skill-on { color: var(--ink); border-color: var(--navy); }
+.skill-on svg { color: var(--navy); }
+
+/* On the front door the box comes first and everything under it is quiet. */
+.stream-center { padding-top: 10vh; }
+.stream-center .greet { margin-bottom: var(--s-md); }
+.stream-center .block { margin-bottom: var(--s-lg); }

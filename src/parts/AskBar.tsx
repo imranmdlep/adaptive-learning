@@ -41,68 +41,77 @@ export default function AskBar({
     setText('')
   }
 
+  const chips = recipes.length > 0
+    ? (
+      <div className="recipes" role="group" aria-label={ask.recipesLabel}>
+        {recipes.map((r) => (
+          <span key={r.label} className="recipe-wrap">
+            <button
+              type="button"
+              className={`recipe${mode === r.mode ? ' recipe-on' : ''}${
+                r.label === authoredLabel ? ' recipe-authored' : ''
+              }`}
+              aria-pressed={mode === r.mode}
+              onClick={() => setMode((m) => (m === r.mode ? 'auto' : r.mode))}
+            >
+              {r.label}
+            </button>
+            {/* Every recipe can be opened rather than only run, because a
+                prompt somebody wrote should be readable before it is used. */}
+            <button
+              type="button"
+              className="recipe-open"
+              aria-label={`${ask.about} ${r.label}`}
+              onClick={() => onRecipe(r.label)}
+            >
+              {'i'}
+            </button>
+          </span>
+        ))}
+      </div>
+    )
+    : null
+
+  const box = (
+    <div className="ask">
+      <label className="visually-hidden" htmlFor="ask">{ask.placeholder}</label>
+      <textarea
+        id="ask"
+        className="ask-input"
+        rows={1}
+        value={text}
+        placeholder={ask.placeholder}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault()
+            submit()
+          }
+        }}
+      />
+      {/* Says what is deciding. Auto until somebody says otherwise, and it names
+          itself rather than being invisible machinery. */}
+      <span className="ask-mode">
+        {mode === 'auto' ? ask.auto : recipes.find((r) => r.mode === mode)?.label}
+      </span>
+      <button
+        className="ask-send"
+        type="button"
+        disabled={!text.trim()}
+        aria-label={ask.send}
+        onClick={submit}
+      >
+        {'\u2191'}
+      </button>
+    </div>
+  )
+
+  /* Pinned to the bottom of a page the chips sit above the box, because that is
+     the direction the eye already travels to reach it. On the front door the
+     box is the first thing and everything else stays quiet underneath. */
   return (
     <div className={inline ? 'askbar askbar-inline' : 'askbar'}>
-      {/* The recipes. Tapping one arms it and leaves the cursor where it was,
-          so nobody loses what they were halfway through typing. */}
-      {recipes.length > 0 && (
-        <div className="recipes" role="group" aria-label={ask.recipesLabel}>
-          {recipes.map((r) => (
-            <span key={r.label} className="recipe-wrap">
-              <button
-                type="button"
-                className={`recipe${mode === r.mode ? ' recipe-on' : ''}${
-                  r.label === authoredLabel ? ' recipe-authored' : ''
-                }`}
-                aria-pressed={mode === r.mode}
-                onClick={() => setMode((m) => (m === r.mode ? 'auto' : r.mode))}
-              >
-                {r.label}
-              </button>
-              {/* Every recipe can be opened rather than only run, because a
-                  prompt somebody wrote should be readable before it is used. */}
-              <button
-                type="button"
-                className="recipe-open"
-                aria-label={`${ask.about} ${r.label}`}
-                onClick={() => onRecipe(r.label)}
-              >
-                {'i'}
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      <div className="ask">
-        <label className="visually-hidden" htmlFor="ask">{ask.placeholder}</label>
-        <textarea
-          id="ask"
-          className="ask-input"
-          rows={1}
-          value={text}
-          placeholder={ask.placeholder}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault()
-              submit()
-            }
-          }}
-        />
-        {/* Says what is deciding. Auto until somebody says otherwise, and it
-            names itself rather than being invisible machinery. */}
-        <span className="ask-mode">{mode === 'auto' ? ask.auto : recipes.find((r) => r.mode === mode)?.label}</span>
-        <button
-          className="ask-send"
-          type="button"
-          disabled={!text.trim()}
-          aria-label={ask.send}
-          onClick={submit}
-        >
-          {'↑'}
-        </button>
-      </div>
+      {inline ? <>{box}{chips}</> : <>{chips}{box}</>}
     </div>
   )
 }
