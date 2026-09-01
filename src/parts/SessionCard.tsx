@@ -20,7 +20,6 @@ export default function SessionCard({ session }: { session: Session }) {
 
   return (
     <section className="session">
-      <div className="session-eyebrow">{copy.eyebrow}</div>
       <p className="session-when">{session.dayNum} {session.month}, {session.time}</p>
       <h2 className="session-topic">{session.topic}, {copy.with} {session.trainer}</h2>
       <p className="session-shape">{session.shape}</p>

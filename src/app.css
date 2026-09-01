@@ -728,8 +728,7 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: 232px minmax(0, 1fr);
   height: 100dvh;
   max-width: none;
   padding: 0;
@@ -1200,26 +1199,11 @@ body {
 .stream-center .greet { margin-bottom: var(--s-md); }
 .stream-center .block { margin-bottom: var(--s-lg); }
 
-/* The rehearsal setup. A form and a button, which is how a scene starts, rather
-   than an input identical to the one on Home that does a different thing. */
-.setup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-xs);
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-md);
-  padding: var(--s-lg);
-  margin-top: var(--s-md);
-}
-.setup .actions { margin-top: var(--s-sm); }
-
 /* ==========================================================================
    ONE PAGE. The rail held two destinations, which made two things out of one
    and put a second input on screen that looked identical to the first and did
    something different. What is left is a thin header and a single column.
    ========================================================================== */
-.app { grid-template-columns: minmax(0, 1fr); }
 
 .topbar {
   display: flex;
@@ -1246,10 +1230,10 @@ body {
 /* Practice is a section on the page, not a page. The rule above it does the
    separating, because a card inside a column that is already cards reads as
    another item rather than as a change of activity. */
-.block-practice {
+.block-session {
   margin-top: var(--s-xl);
   padding-top: var(--s-lg);
   border-top: 1px solid var(--line-2);
 }
-.block-practice .session { margin: var(--s-lg) 0 0; }
+.block-session .session { margin: var(--s-sm) 0 0; }
 .stream-center { padding-top: 8vh; }

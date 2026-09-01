@@ -11,7 +11,7 @@ import {
   updateOpen,
 } from './capture'
 import { Wordmark } from './brand'
-import { app } from './content'
+import { app, rail } from './content'
 import { pickModule } from './modules'
 import type { Session } from './session'
 import { getSession } from './session'
@@ -108,27 +108,12 @@ export default function App() {
     setScreen({ kind: 'page' })
   }
 
-  /* Rehearsal is not the chat. The other side plays the person, never a coach,
-   * so it never routes through Auto and never gets a format chosen for it. */
-  function onRehearse(setup: string) {
-    const moduleId = pickModule(setup)
-    const entry = startEntry(who, moduleId, setup, {
-      minutes: 'some',
-      wanted: 'rehearsal',
-      auto: false,
-    })
-    setOpen(entry)
-    void send('rehearsal', entry)
-    setScreen({ kind: 'work' })
-  }
-
   function renderPage() {
     return (
       <Home
         session={session}
         past={past}
         onAsk={onAsk}
-        onRehearse={onRehearse}
         onOpen={() => setScreen({ kind: 'page' })}
         onRecipe={setSheet}
       />
@@ -174,11 +159,21 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
-        <button type="button" className="topbar-brand" aria-label={app.name} onClick={goHome}>
-          <Wordmark />
-        </button>
-        <div className="topbar-right">
+      <nav className="rail" aria-label={app.name}>
+        <span className="rail-brand"><Wordmark /></span>
+        <ul className="rail-list">
+          <li>
+            <button
+              type="button"
+              className={`rail-item${screen.kind === 'page' ? ' rail-on' : ''}`}
+              aria-current={screen.kind === 'page' ? 'page' : undefined}
+              onClick={goHome}
+            >
+              {rail.home}
+            </button>
+          </li>
+        </ul>
+        <div className="rail-foot">
           {who && <span className="whoami">{who}</span>}
           <button
             className="icon-btn"
@@ -192,7 +187,7 @@ export default function App() {
             ◐
           </button>
         </div>
-      </header>
+      </nav>
 
       {/* Home and Practice bring their own scrolling column plus a pinned bar.
           A thread is one column, so it gets the container here rather than
