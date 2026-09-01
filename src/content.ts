@@ -62,6 +62,8 @@ export const home = {
   followUpAsk: (what: string) =>
     `I had the conversation I planned: ${what}. Ask me how it actually went, one thing at a time.`,
   recordEmpty: 'Whatever you work on shows up here.',
+  /* Threads from before a skill could be resolved, so nothing is ever lost. */
+  recordLoose: 'Everything else',
   today: 'Today',
   yesterday: 'Yesterday',
 }

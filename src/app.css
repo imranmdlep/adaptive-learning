@@ -1284,3 +1284,17 @@ body {
 .opts-row { flex-direction: row; flex-wrap: wrap; }
 .opt-inline { width: auto; min-height: 36px; padding: 6px var(--s-md); }
 .input-time { width: auto; min-width: 140px; }
+
+/* The record, gathered under what each thread was about. A heading with the
+   skill's own mark, so the grouping is legible without a word explaining it. */
+.record-skill {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 var(--s-xs);
+  font-size: var(--fz-sm);
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.record-skill svg { color: var(--muted); flex: none; }
+.record-group + .record-group { margin-top: var(--s-lg); }
