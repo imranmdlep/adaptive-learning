@@ -13,6 +13,8 @@ export const app = {
   /* Says what this is without claiming it is finished. */
   pilot: 'An early build. What you do here shapes what gets made.',
   theme: 'Switch theme',
+  narrow: 'Narrow the sidebar',
+  widen: 'Widen the sidebar',
   back: 'Back',
   close: 'Close',
   collapse: 'Fold this back down',
@@ -260,17 +262,17 @@ export const modes = {
   conversation: {
     head: 'Talking it through',
     placeholder: 'Say what happened, or what you are about to walk into',
-    empty: 'Tell me where you are with it.',
+    empty: '',
   },
   quiz: {
     head: 'What you remember',
     placeholder: 'Your answer',
-    empty: 'One question at a time, answered in your own words.',
+    empty: '',
   },
   pointers: {
     head: 'Pointers',
     placeholder: 'Ask for anything else you need',
-    empty: 'A few things worth having in mind, coming up.',
+    empty: '',
   },
 }
 

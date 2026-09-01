@@ -164,7 +164,10 @@ export default function Work({
       </div>
 
       <div className="thread">
-        {turns.length === 0 && !busy && <p className="lead">{copy.empty}</p>}
+        {/* Nothing canned before a reply arrives. A line like "tell me where you
+            are with it" is written without having read the question, and it
+            pre-empts whatever was actually asked. */}
+        {turns.length === 0 && !busy && copy.empty && <p className="lead">{copy.empty}</p>}
 
         {turns.map((t, i) => {
           /* The first user turn is the line they wrote on the way in, and it is

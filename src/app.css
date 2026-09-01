@@ -736,11 +736,14 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
+  /* auto rather than a fixed width, so the column follows whatever the rail
+     actually is and the two states cannot drift apart. */
+  grid-template-columns: auto minmax(0, 1fr);
   height: 100dvh;
   max-width: none;
   padding: 0;
 }
+.rail { width: 232px; }
 
 .rail {
   display: flex;
@@ -1405,3 +1408,60 @@ body {
 }
 .thread-next:hover { color: var(--ink); }
 .thread-next:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 2px; }
+
+/* ---- the rail, in both states -------------------------------------------
+   Narrow is not the wide rail with the labels hidden. The row becomes a square
+   the icon sits in the middle of, the wordmark becomes the asterisk the brand
+   already uses alone, and the name becomes its initial. Everything that goes
+   invisible keeps a title and an aria-label, so nothing is lost to a screen
+   reader or to a hover. */
+.rail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-xs);
+  padding: 0 0 var(--s-sm);
+}
+.rail-brand { display: flex; align-items: center; padding-left: var(--s-xs); }
+
+.rail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+}
+.rail-item svg { flex: none; color: var(--muted); }
+.rail-item:hover svg, .rail-on svg { color: var(--ink); }
+
+.rail-narrow {
+  /* 40px of control plus the rail's own padding, so everything in the column
+     is the same square on the same centre line. The wide state can afford
+     ragged edges because the labels carry it; narrow cannot. */
+  width: 72px;
+  padding-inline: 16px;
+  align-items: stretch;
+}
+.rail-narrow .rail-top,
+.rail-narrow .rail-list,
+.rail-narrow .rail-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-xs);
+}
+.rail-narrow .rail-brand,
+.rail-narrow .rail-item,
+.rail-narrow .icon-btn,
+.rail-narrow .whoami {
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.rail-narrow .rail-brand { padding-left: 0; }
+.rail-narrow .rail-list { width: 100%; }
+.rail-narrow .rail-list li { display: flex; justify-content: center; width: 100%; }
+.rail-narrow .rail-top { padding-bottom: var(--s-sm); }
+/* The name becomes its initial, which still says whose account this is. */
+.rail-narrow .whoami { border-radius: var(--r-pill); font-size: var(--fz-sm); }

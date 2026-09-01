@@ -23,6 +23,7 @@ const WHO_KEY = 'al.who'
 const KEY_KEY = 'al.key'
 const OPEN_KEY = 'al.open'
 const DONE_KEY = 'al.done'
+const RAIL_KEY = 'al.rail'
 const PLANS_KEY = 'al.plans'
 
 export type Turn = { role: 'user' | 'assistant'; content: string }
@@ -110,6 +111,16 @@ export function getWho(): string {
 
 export function setWho(name: string) {
   writeLocal(WHO_KEY, name)
+}
+
+/* Whether the rail is open. A per-browser convenience, so it lives here beside
+ * the other things this machine remembers rather than in any record. */
+export function getRailOpen(): boolean {
+  return readLocal<boolean>(RAIL_KEY, true)
+}
+
+export function setRailOpen_(open: boolean) {
+  writeLocal(RAIL_KEY, open)
 }
 
 /* The shared access code, carried in each person's link as ?k= and remembered

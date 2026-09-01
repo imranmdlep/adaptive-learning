@@ -6,9 +6,11 @@ import {
   getOpen,
   getPast,
   getPlans,
+  getRailOpen,
   getWho,
   rememberPast,
   send,
+  setRailOpen_,
   startEntry,
   updateOpen,
 } from './capture'
@@ -16,8 +18,10 @@ import {
   IconArrowsDiagonal,
   IconArrowsDiagonalMinimize2,
   IconChevronDown,
+  IconHome,
+  IconLayoutSidebar,
 } from '@tabler/icons-react'
-import { Wordmark } from './brand'
+import { Asterisk, Wordmark } from './brand'
 import { app, rail } from './content'
 import { pickModule } from './modules'
 import type { Session } from './session'
@@ -59,6 +63,14 @@ export default function App() {
    * full height when somebody wants to read rather than glance. */
   const [big, setBig] = useState(false)
   const [busy, setBusy] = useState(false)
+  /* Whether the rail is open. Remembered, because a person who narrows it wants
+   * it narrow tomorrow as well, and re-collapsing it every visit is the kind of
+   * small rudeness that adds up. */
+  const [railOpen, setRailOpen] = useState(getRailOpen)
+
+  useEffect(() => {
+    setRailOpen_(railOpen)
+  }, [railOpen])
   const [dark, setDark] = useState<boolean | null>(null)
   /* Lepaya scheduled the session, so Lepaya knows when it is. Reading it rather
    * than asking is the whole of what makes the first screen adaptive. */
@@ -200,22 +212,51 @@ export default function App() {
 
   return (
     <div className="app">
-      <nav className="rail" aria-label={app.name}>
-        <span className="rail-brand"><Wordmark /></span>
+      <nav className={railOpen ? 'rail' : 'rail rail-narrow'} aria-label={app.name}>
+        <div className="rail-top">
+          <span className="rail-brand">
+            {/* The full wordmark needs room. Narrow, the asterisk carries it,
+                which is the same mark the brand already uses on its own. */}
+            {railOpen ? <Wordmark /> : <Asterisk size={20} />}
+          </span>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={railOpen ? app.narrow : app.widen}
+            aria-expanded={railOpen}
+            onClick={() => setRailOpen((v) => !v)}
+          >
+            {/* One glyph for both directions. The panel either has a rail or
+                it does not, and swapping the drawing on every press makes the
+                control look like two different buttons in the same place. */}
+            <IconLayoutSidebar size={18} stroke={1.6} aria-hidden />
+          </button>
+        </div>
+
         <ul className="rail-list">
           <li>
             <button
               type="button"
               className={`rail-item${screen.kind === 'page' ? ' rail-on' : ''}`}
               aria-current={screen.kind === 'page' ? 'page' : undefined}
+              /* Narrow, the label is gone but the name still has to reach a
+                 screen reader and a tooltip. */
+              title={railOpen ? undefined : rail.home}
+              aria-label={railOpen ? undefined : rail.home}
               onClick={goHome}
             >
-              {rail.home}
+              <IconHome size={18} stroke={1.6} aria-hidden />
+              {railOpen && <span>{rail.home}</span>}
             </button>
           </li>
         </ul>
+
         <div className="rail-foot">
-          {who && <span className="whoami">{who}</span>}
+          {who && (
+            <span className="whoami" title={railOpen ? undefined : who}>
+              {railOpen ? who : who.slice(0, 1).toUpperCase()}
+            </span>
+          )}
           <button
             className="icon-btn"
             type="button"
