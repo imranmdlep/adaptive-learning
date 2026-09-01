@@ -1,0 +1,634 @@
+/* Built on tokens.css (navy-forward, both themes). This pass restyles the same
+ * four screens as a consumer app rather than an instrument: the real wordmark
+ * in a sticky bar, pill controls, message bubbles instead of labeled blocks,
+ * and one gentle rise on each screen change. The mechanics are untouched.
+ *
+ * Scale: controls went to 44/48px pills (thumb-first, the app is used on
+ * phones), cards to 16px radius. Bubbles follow the messaging convention every
+ * real chat app trains: your words right and on navy, Claude's plain on the
+ * page. The speaker labels stay in the DOM for screen readers only. */
+
+:root {
+  --r-sm: 0.75rem; /* 12 inputs */
+  --r-md: 1rem; /* 16 cards, panels */
+  --r-bubble: 1.125rem; /* 18 chat bubbles */
+  --r-pill: 999px; /* buttons, chips */
+  --ctl-md: 38px;
+  --ctl-lg: 48px;
+  --s-2xs: 0.25rem;
+  --s-xs: 0.5rem;
+  --s-sm: 0.75rem;
+  --s-md: 1rem;
+  --s-lg: 1.5rem;
+  --s-xl: 2rem;
+  --s-2xl: 3rem;
+  /* One solid 2px ring, no halo. Blurple measures 5.44:1 light and 4.01:1
+     dark against the page, comfortably past the 3:1 non-text rule. The halo
+     was tried and read too loud on the full-width textarea; the ring alone
+     is the quiet version that still cannot be missed. */
+  --focus-ring: 0 0 0 2px var(--blurple);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: var(--fz-md);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- chrome -------------------------------------------------------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  padding: var(--s-sm) var(--s-md);
+  border-bottom: 1px solid var(--line);
+  background: var(--nav);
+}
+.brand {
+  display: flex;
+  align-items: center;
+  color: var(--ink); /* the wordmark letters render in currentColor */
+}
+.brand svg {
+  display: block;
+}
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+}
+.whoami {
+  font-size: var(--fz-xs);
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--sunken);
+  border-radius: var(--r-pill);
+  padding: 0.25rem 0.75rem;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--reading);
+  margin: 0 auto;
+  padding: var(--s-xl) var(--s-md) var(--s-2xl, 3rem);
+}
+
+/* Each screen rises in once. One orchestrated moment, nothing scattered. */
+.main > section {
+  animation: rise 240ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .main > section {
+    animation: none;
+  }
+}
+
+.footnote {
+  max-width: var(--reading);
+  margin: 0 auto;
+  /* width:100% because auto margins on a flex column item disable stretch, so
+     without it the footnote and its rule floated 121px inboard of the column. */
+  width: 100%;
+  padding: var(--s-lg) var(--s-md) var(--s-xl);
+  font-size: 0.875rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+
+/* ---- type ---------------------------------------------------------------- */
+
+.h1 {
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 5.5vw, var(--fz-2xl));
+  /* 700 is Erode's top weight; asking for 800 would synthesize a faux bold.
+     A serif also wants its own spacing, so no grotesk-style tight tracking. */
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.005em;
+  margin: 0;
+  text-wrap: pretty;
+}
+.lead {
+  color: var(--muted);
+  margin: var(--s-sm) 0 0;
+}
+.eyebrow {
+  font-size: var(--fz-2xs);
+  letter-spacing: var(--caps);
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ---- fields -------------------------------------------------------------- */
+
+.field {
+  margin-top: var(--s-lg);
+}
+.field-label {
+  display: block;
+  font-size: var(--fz-sm);
+  font-weight: 600;
+  margin-bottom: var(--s-xs);
+}
+.input,
+.area {
+  width: 100%;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  /* line-2 measured 1.22:1. A control boundary needs 3:1. */
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: var(--s-sm) var(--s-md);
+}
+.input {
+  height: var(--ctl-lg);
+  padding-block: 0;
+  border-radius: var(--r-pill);
+}
+.area {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.input:focus-visible,
+.area:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-color: transparent;
+}
+.input::placeholder,
+.area::placeholder {
+  /* No opacity: it dropped these to 3.29:1 light and 3.45:1 dark. On the first
+     screen the placeholder IS the instruction, so it has to be readable. */
+  color: var(--muted);
+  opacity: 1;
+}
+.field-note {
+  /* 14px: this carries the disclosure, which is the smallest thing on the
+     screen that changes whether someone pastes a real document. */
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin-top: var(--s-xs);
+}
+
+.name-row {
+  max-width: 220px;
+  margin-bottom: var(--s-lg);
+}
+
+/* ---- buttons: DS contract heights, pill-shaped for the app feel ----------- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  flex-wrap: wrap;
+  margin-top: var(--s-lg);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2xs);
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: var(--fz-sm);
+  line-height: 1;
+  white-space: nowrap;
+  padding: 0 var(--s-md);
+  height: var(--ctl-md);
+  border: 1px solid transparent;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: background var(--motion), border-color var(--motion);
+}
+.btn-lg {
+  height: var(--ctl-lg);
+  font-size: var(--fz-md);
+  font-weight: 700;
+  padding: 0 var(--s-xl);
+}
+.btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.btn:disabled {
+  /* 0.5 dropped the dark pill to 1.27:1 against the page, a ghost. Disabled
+     is WCAG-exempt but this is the first thing a new visitor looks at. */
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* primary is navy, the navy-forward decision, not the DS default blurple */
+.btn-primary {
+  background: var(--navy);
+  color: var(--on-navy);
+}
+.btn-primary:hover:not(:disabled) {
+  /* Token, not a hex: hover darkens in light but must LIGHTEN in dark, where
+     the old #12233a moved the pill toward the page and read as pressed-away. */
+  background: var(--navy-hover);
+}
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--sunken);
+}
+.btn-subtle {
+  background: transparent;
+  color: var(--link);
+}
+.btn-subtle:hover:not(:disabled) {
+  background: var(--selected);
+}
+
+.icon-btn {
+  height: var(--ctl-md);
+  width: var(--ctl-md);
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--body);
+  font-size: var(--fz-md);
+}
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* ---- pickable rows ------------------------------------------------------- */
+
+.opts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+  margin-top: var(--s-lg);
+}
+.opt {
+  display: flex;
+  align-items: center;
+  gap: var(--s-sm);
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: var(--s-sm) var(--s-md);
+  min-height: var(--ctl-lg);
+  cursor: pointer;
+}
+.opt:hover {
+  background: var(--sunken);
+}
+.opt:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.opt-on {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 1px var(--navy) inset;
+  font-weight: 600;
+}
+/* In dark, navy falls between the page and the row fill (1.82:1 outward), and
+   line-strong is the same color unselected rows already wear (1.0:1 against
+   them). Blurple is the one hue that clears 3:1 against both the page and the
+   row fill, and the selected tint separates the surface as well. */
+@media (prefers-color-scheme: dark) {
+  .opt-on {
+    border-color: var(--blurple);
+    box-shadow: 0 0 0 1px var(--blurple) inset;
+    background: var(--selected);
+  }
+}
+:root[data-theme='dark'] .opt-on {
+  border-color: var(--blurple);
+  box-shadow: 0 0 0 1px var(--blurple) inset;
+  background: var(--selected);
+}
+:root[data-theme='light'] .opt-on {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 1px var(--navy) inset;
+}
+
+/* ---- the navy recall card ------------------------------------------------ */
+
+.recall {
+  background: var(--navy);
+  color: var(--on-navy);
+  border: 1px solid var(--navy-hairline);
+  border-radius: var(--r-md);
+  padding: var(--s-lg);
+  box-shadow: var(--shadow);
+  /* Both sides, because what follows the panel differs by screen. Work is
+     followed by .thread, which brings its own top margin; the follow-up screen
+     is followed by an .h1 at margin 0, so without this the question sat flush
+     against the panel. The two margins collapse, so Work is unchanged. */
+  margin-block: var(--s-lg);
+}
+.recall .eyebrow {
+  color: var(--on-navy-dim);
+}
+.recall-said {
+  font-family: var(--display);
+  font-size: var(--fz-lg);
+  font-weight: 600;
+  line-height: 1.35;
+  margin: var(--s-xs) 0 0;
+  text-wrap: pretty;
+}
+
+/* ---- the landing front door ------------------------------------------------
+ * One viewport, no scroll. Desktop: an equally balanced split, copy and
+ * consent left, a quiet video loop right. Phones get the copy column alone;
+ * the media is decorative and the landing promises a single viewport. */
+
+.main-wide {
+  /* Wide enough that the media half reads as a real panel, not a thumbnail. */
+  max-width: 1320px;
+  display: flex;
+}
+
+.landing {
+  flex: 1;
+  display: grid;
+  gap: var(--s-xl);
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+}
+@media (min-width: 880px) {
+  .landing {
+    /* The media takes the larger share: copy is compact by design, and the
+       video is what makes the page feel inhabited. The copy column narrows
+       to what its card actually needs, which moves it left and hands the
+       spare width to the video. */
+    grid-template-columns: 0.85fr 1.3fr;
+    gap: var(--s-2xl);
+  }
+}
+
+.media {
+  display: none;
+}
+@media (min-width: 880px) {
+  .media {
+    display: block;
+    width: 100%;
+  }
+}
+.media-video {
+  display: block;
+  width: 100%;
+  height: min(74vh, 660px);
+  object-fit: cover;
+  /* The panel is taller than the 16:9 source, so cover crops the sides.
+     The laptop and the typing hands live in the right of the frame; bias
+     the crop window there instead of the centre. */
+  object-position: 100% center;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.landing-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-md);
+}
+/* The headline is the hero; the wordmark stays small in the topbar. */
+.landing-h1 {
+  font-size: clamp(2.3rem, 5vw, 3.1rem);
+  line-height: 1.08;
+}
+.landing-lead {
+  margin: 0;
+  max-width: 480px;
+  font-size: var(--fz-lg);
+}
+/* The next step, packaged: consent, the tick, and Start in one soft card. */
+.action-card {
+  width: min(100%, 420px);
+  margin-top: var(--s-sm);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow);
+  padding: var(--s-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--s-md);
+}
+.consent {
+  margin: 0;
+  font-size: var(--fz-sm);
+  color: var(--muted);
+}
+.btn-wide {
+  width: 100%;
+}
+.agree {
+  display: flex;
+  align-items: center;
+  gap: var(--s-xs);
+  font-size: var(--fz-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.agree input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--blurple);
+  cursor: pointer;
+}
+.agree input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: 4px;
+}
+/* ---- the saved moment ---------------------------------------------------- */
+
+.saved-mark {
+  display: block;
+  margin-bottom: var(--s-md);
+}
+
+/* ---- the conversation ---------------------------------------------------- */
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-md);
+  margin-top: var(--s-lg);
+}
+
+.turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2xs);
+}
+/* Speaker identity stays for screen readers; sighted users get the bubble
+   convention instead, which is what makes it read as an app. */
+.turn-who {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.turn-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.turn-user {
+  align-self: flex-end;
+  max-width: 85%;
+}
+.turn-user .turn-text {
+  background: var(--navy);
+  color: var(--on-navy);
+  border: 1px solid var(--navy-hairline);
+  border-radius: var(--r-bubble) var(--r-bubble) var(--s-2xs) var(--r-bubble);
+  padding: var(--s-sm) var(--s-md);
+}
+.turn-assistant {
+  max-width: 100%;
+}
+
+.thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-xs);
+  color: var(--muted);
+}
+.thinking svg {
+  animation: turn 2.4s linear infinite;
+}
+.thinking-label::after {
+  content: '';
+  animation: dots 1.4s steps(4, end) infinite;
+}
+@keyframes turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thinking svg {
+    animation: none;
+  }
+  .thinking-label::after {
+    animation: none;
+    content: '...';
+  }
+}
+
+.field-error {
+  color: var(--danger);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- the situation list, and the quiet line under a group of choices ------
+   Added for this app: the front door is a list of situations, each of which
+   needs a title and a one-line blurb rather than a single label. */
+
+.hint {
+  margin-top: var(--s-sm);
+  font-size: var(--fz-sm);
+  /* --muted is the corrected #616782, which clears AA on the sunken ground as
+     well as on white. The DS's #6E7488 passes only on white. */
+  color: var(--muted);
+}
+
+.opt-stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-block: var(--s-md);
+}
+.opt-title {
+  font-weight: 600;
+}
+.opt-blurb {
+  font-size: var(--fz-sm);
+  color: var(--muted);
+}
+/* Says only that someone has been here before. Not a tick, not progress:
+   neither is true of a situation that keeps happening to a person. */
+.opt-seen {
+  margin-top: var(--s-xs);
+  font-size: var(--fz-xs);
+  color: var(--muted);
+}
+.opt:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
