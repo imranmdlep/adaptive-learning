@@ -757,10 +757,6 @@ body {
   background: var(--sunken);
   border-right: 1px solid var(--line-2);
 }
-.rail-brand {
-  display: block;
-  padding: 0 var(--s-sm) var(--s-sm);
-}
 .rail-list {
   list-style: none;
   margin: 0;
@@ -1422,7 +1418,17 @@ body {
   gap: var(--s-xs);
   padding: 0 0 var(--s-sm);
 }
-.rail-brand { display: flex; align-items: center; padding-left: var(--s-xs); }
+/* Same height as the control beside it, with the mark centred inside it.
+   The span was taking its height from line-height, which left the wordmark
+   sitting six pixels above the toggle's optical centre: close enough to look
+   like a mistake rather than a decision, and the reason it read as floating. */
+.rail-brand {
+  display: flex;
+  align-items: center;
+  height: var(--ctl-md);
+  padding-left: var(--s-xs);
+}
+.rail-brand svg { display: block; }
 
 .rail-item {
   display: flex;
