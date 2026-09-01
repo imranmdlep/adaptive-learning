@@ -14,8 +14,10 @@ import {
 import { Wordmark } from './brand'
 import { app } from './content'
 import { moduleById } from './modules'
+import type { Session } from './session'
+import { getSession } from './session'
 import Alone from './screens/Alone'
-import Envelope from './screens/Envelope'
+import Home from './screens/Home'
 import Landed from './screens/Landed'
 import Pick from './screens/Pick'
 import Work from './screens/Work'
@@ -37,8 +39,10 @@ import Work from './screens/Work'
  * ask for is what helps them. That is why nothing here is recommended or
  * preselected. */
 type Screen =
-  | { kind: 'pick' }
-  | { kind: 'envelope'; moduleId: string }
+  | { kind: 'home' }
+  /* She has already said what she wants and how long she has, by tapping an
+   * offer. Those ride on the screen until there is an entry to write them to. */
+  | { kind: 'pick'; mode: Mode; minutes: Minutes }
   | { kind: 'work' }
   | { kind: 'alone' }
   | { kind: 'landed' }
@@ -50,29 +54,30 @@ export default function App() {
   const [dark, setDark] = useState<boolean | null>(null)
   /* A session left open resumes where it was, so closing a tab mid-conversation
    * costs nobody their thread. */
-  const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'pick' }))
+  const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'home' }))
+  /* Lepaya scheduled the session, so Lepaya knows when it is. Reading it here
+   * rather than asking is the whole of what makes the first screen adaptive. */
+  const [session] = useState<Session | null>(getSession)
 
   useEffect(() => {
     if (dark === null) return
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
   }, [dark])
 
-  function onPicked(name: string, moduleId: string) {
+  /* Tapping an offer declares the format and the time in one move. Recorded
+   * here, before she has picked a conversation, so somebody who taps an offer
+   * and then backs out still tells us what they reached for. */
+  function onOffer(name: string, mode: Mode, minutes: Minutes) {
     setWho(name)
     setWhoState(name)
-    /* Recorded before the envelope, so a situation someone opened and then
-     * backed out of still tells us they opened it. Which situations get looked
-     * at and abandoned is worth as much as which get finished. */
-    void send('picked', { who: name, moduleId })
-    setScreen({ kind: 'envelope', moduleId })
+    void send('offer', { who: name, wanted: mode, minutes, hasSession: !!session })
+    setScreen({ kind: 'pick', mode, minutes })
   }
 
-  function onEnvelope(moduleId: string, minutes: Minutes, wanted: Mode, working: string) {
-    const entry = startEntry(who, moduleId, working, { minutes, wanted })
+  function onPicked(mode: Mode, minutes: Minutes, moduleId: string, working: string) {
+    const entry = startEntry(who, moduleId, working, { minutes, wanted: mode })
     setOpen(entry)
-    /* The declared answer on its own, so what someone asked for survives even
-     * if they never send a single turn. */
-    void send('envelope', entry)
+    void send('started', entry)
     setScreen({ kind: 'work' })
   }
 
@@ -103,29 +108,32 @@ export default function App() {
     setScreen({ kind: 'landed' })
   }
 
+  function goHome() {
+    setScreen({ kind: 'home' })
+  }
+
   function screenContent() {
-    if (screen.kind === 'pick') {
-      return <Pick who={who} past={past} onNext={onPicked} />
+    if (screen.kind === 'home') {
+      return <Home who={who} session={session} past={past} onOffer={onOffer} />
     }
-    if (screen.kind === 'envelope') {
-      const mod = moduleById(screen.moduleId)
-      if (!mod) return <Pick who={who} past={past} onNext={onPicked} />
+    if (screen.kind === 'pick') {
+      const { mode, minutes } = screen
       return (
-        <Envelope
-          module={mod}
-          onNext={(minutes, wanted, working) => onEnvelope(mod.id, minutes, wanted, working)}
+        <Pick
+          onNext={(moduleId, working) => onPicked(mode, minutes, moduleId, working)}
+          onBack={goHome}
         />
       )
     }
     if (screen.kind === 'landed') {
-      return <Landed onAnother={() => setScreen({ kind: 'pick' })} />
+      return <Landed onAnother={goHome} />
     }
 
     /* work and alone both need the open session; without one there is nothing
      * to show, so fall back to the front door rather than rendering empty. */
     const mod = open ? moduleById(open.moduleId) : undefined
     if (!open || !mod || !open.used || !open.minutes) {
-      return <Pick who={who} past={past} onNext={onPicked} />
+      return <Home who={who} session={session} past={past} onOffer={onOffer} />
     }
 
     if (screen.kind === 'alone') {

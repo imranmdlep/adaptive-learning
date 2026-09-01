@@ -1,46 +1,31 @@
 import { useState } from 'react'
-import type { Past } from '../capture'
 import { MODULES } from '../modules'
-import { pick } from '../content'
+import { envelope, pick } from '../content'
 
-/* The front door: a list of situations, not a catalogue of courses.
+/* Which conversation, after she has already said what she wants and how long
+ * she has by tapping an offer.
  *
- * Every row is something someone recognises from their own week. No skill
- * names, no module codes, no cluster headings. The phase-1 interviews name the
- * catalogue-as-front-door as the problem, and a list of skill names is that
- * problem with better typography.
+ * Every row is a situation somebody recognises from their own week. No skill
+ * names, no module names, no course names. The phase-1 interviews name the
+ * catalogue as the problem, and a list of skill names is that problem with
+ * better typography.
  *
- * Nothing is locked, nothing is ordered by difficulty, nothing is recommended.
- * Which one someone reaches for first is a signal we would destroy by
- * suggesting one. */
+ * The sub-lines describe the SITUATION, never the reader's failure inside it.
+ * "You had the answer and the conversation ended there" is a verdict on a
+ * person and it has no business here. Someone picking a row is telling us what
+ * they are going after. */
 export default function Pick({
-  who,
-  past,
   onNext,
+  onBack,
 }: {
-  who: string
-  past: Past[]
-  onNext: (name: string, moduleId: string) => void
+  onNext: (moduleId: string, working: string) => void
+  onBack: () => void
 }) {
-  const [name, setName] = useState(who)
-  const ready = name.trim().length > 0
-  const seen = new Set(past.map((p) => p.moduleId))
+  const [chosen, setChosen] = useState<string | null>(null)
+  const [working, setWorking] = useState('')
 
   return (
     <section>
-      {!who && (
-        <div className="field name-row">
-          <label className="field-label" htmlFor="name">{pick.nameLabel}</label>
-          <input
-            id="name"
-            className="input"
-            value={name}
-            placeholder={pick.namePlaceholder}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-      )}
-
       <h1 className="h1">{pick.ask}</h1>
       <p className="lead">{pick.help}</p>
 
@@ -49,21 +34,47 @@ export default function Pick({
           <button
             key={m.id}
             type="button"
-            className="opt opt-stack"
-            disabled={!ready}
-            onClick={() => onNext(name.trim(), m.id)}
+            className={`opt opt-stack${chosen === m.id ? ' opt-on' : ''}`}
+            aria-pressed={chosen === m.id}
+            onClick={() => setChosen(m.id)}
           >
             <span className="opt-title">{m.title}</span>
             <span className="opt-blurb">{m.blurb}</span>
-            {/* Says only that they have been here before. Not a tick, not a
-                score, not progress: none of those are true of a situation that
-                keeps happening. */}
-            {seen.has(m.id) && <span className="opt-seen">Been here before</span>}
           </button>
         ))}
       </div>
 
-      {past.length > 0 && <p className="hint">{pick.again}</p>}
+      {/* Appears once a row is chosen, because asking for detail about nothing
+          in particular is how a form gets abandoned. Optional, and the whole
+          thing works without it. */}
+      {chosen && (
+        <div className="field">
+          <label className="field-label" htmlFor="detail">{envelope.detailLabel}</label>
+          <textarea
+            id="detail"
+            className="area"
+            rows={2}
+            value={working}
+            placeholder={envelope.detailPlaceholder}
+            onChange={(e) => setWorking(e.target.value)}
+          />
+          <p className="hint">{envelope.detailHelp}</p>
+        </div>
+      )}
+
+      <div className="actions">
+        <button
+          className="btn btn-lg btn-primary"
+          type="button"
+          disabled={!chosen}
+          onClick={() => { if (chosen) onNext(chosen, working.trim()) }}
+        >
+          {envelope.commit}
+        </button>
+        <button className="btn btn-subtle" type="button" onClick={onBack}>
+          {'Back'}
+        </button>
+      </div>
     </section>
   )
 }

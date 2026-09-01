@@ -57,7 +57,7 @@ export const MODULES: Module[] = [
   {
     id: 'missing-the-mark',
     title: 'Their work keeps missing what you asked for',
-    blurb: 'You have mentioned it before, and nothing changed.',
+    blurb: 'The same thing, more than once.',
     skills: ['giving-feedback'],
     substance: `Separate what was observable from your interpretation of it. "The last three drafts came back without the pricing section" is observable. "You are not taking this seriously" is an interpretation, and it is the thing that starts an argument.
 
@@ -111,7 +111,7 @@ Detail comes on request. Offering it unasked reads as not being sure.`,
   {
     id: 'jumped-to-solving',
     title: 'They brought you a problem and you jumped to solving it',
-    blurb: 'You had the answer, and the conversation ended there.',
+    blurb: 'When what they wanted was to think out loud.',
     skills: ['active-listening', 'asking-questions'],
     substance: `Find out what they came for before answering. Sometimes it is a decision, sometimes it is a sounding board, and the two need opposite things from you.
 

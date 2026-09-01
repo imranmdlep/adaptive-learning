@@ -632,3 +632,90 @@ body {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+/* ---- the session panel ---------------------------------------------------
+   If the trainer is the premium, the room is the best thing that happens here
+   and it should read that way. Navy is where identity lives in the design
+   system, so this is the one panel on the screen that carries it.
+
+   Text on navy comes from the on-navy pair, never from --ink or --link: the
+   functional blurple fails against navy, which is exactly the trap the DS
+   audit found. */
+.session {
+  background: var(--navy);
+  color: var(--on-navy);
+  border: 1px solid var(--navy-hairline);
+  border-radius: var(--r-md);
+  padding: var(--s-lg) var(--s-lg);
+  margin-bottom: var(--s-xl);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.session-eyebrow {
+  font-family: var(--mono);
+  font-size: var(--fz-2xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--on-navy-dim);
+  margin-bottom: var(--s-xs);
+}
+.session-when {
+  font-family: var(--mono);
+  font-size: var(--fz-sm);
+  color: var(--on-navy-dim);
+  margin: 0;
+}
+.session-topic {
+  font-family: var(--display);
+  font-size: var(--fz-xl);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--on-navy);
+  margin: 0;
+}
+.session-shape {
+  font-size: var(--fz-sm);
+  color: var(--on-navy-dim);
+  margin: var(--s-xs) 0 0;
+  max-width: 44ch;
+}
+
+/* The time on an offer. Tapping the offer is how someone tells us how long
+   they have, so the time is the first thing on the row, not a footnote. */
+.opt-time {
+  font-family: var(--mono);
+  font-size: var(--fz-2xs);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+/* Her own trail. No count, no streak, no progress: none of those are true of
+   conversations that keep happening to a person. */
+.been {
+  margin-top: var(--s-xl);
+  padding-top: var(--s-lg);
+  border-top: 1px solid var(--line-2);
+}
+.been-head {
+  font-family: var(--mono);
+  font-size: var(--fz-2xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 var(--s-sm);
+}
+.been-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--fz-sm);
+  color: var(--ink-2);
+}

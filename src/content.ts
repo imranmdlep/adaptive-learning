@@ -16,12 +16,68 @@ export const app = {
   back: 'Back',
 }
 
+/* The landing, in both states.
+ *
+ * She lands on HER, with the session in it. The other way round, where the
+ * session frames everything and the app is its runbook, is what the product
+ * already is and what the phase-1 interviews name as the problem.
+ *
+ * The session panel is the human moment made visible. If the trainer is the
+ * premium, the room is the best thing that happens here and it should read
+ * that way, not as a date in a list. */
+export const home = {
+  /* with a session coming */
+  soonHead: (day: string) => `Before ${day}`,
+  soonHelp: 'Anything here is worth doing on its own. None of it is homework.',
+  todayHead: 'Before you go in',
+  todayHelp: 'Ten minutes now is worth more than an hour last week.',
+  /* the ordinary week, which is most weeks */
+  openHead: 'What is coming up for you?',
+  openHelp: 'Pick what fits the time you actually have.',
+  sessionEyebrow: 'Your session',
+  sessionWith: 'with',
+  /* the quiet list of what she has already done */
+  beenHead: 'What you have worked on',
+}
+
+/* The offers. Each one is a format with an honest time on it.
+ *
+ * This is the envelope, asked without a form. Tapping "Two minutes, pointers"
+ * declares both the time available and the format wanted in one move, which is
+ * the same signal a two question screen collected and one fewer thing standing
+ * between someone and the thing they came for.
+ *
+ * Neither is recommended and the order never changes, because which one people
+ * reach for is the finding. */
+export const offers = [
+  {
+    mode: 'pointers' as const,
+    minutes: 'few' as const,
+    time: 'Two minutes',
+    title: 'Pointers for something specific',
+    blurb: 'For right before you walk into it.',
+  },
+  {
+    mode: 'quiz' as const,
+    minutes: 'some' as const,
+    time: 'Ten minutes',
+    title: 'Check what you remember',
+    blurb: 'Questions one at a time, answered in your own words.',
+  },
+  {
+    mode: 'conversation' as const,
+    minutes: 'proper' as const,
+    time: 'Twenty minutes',
+    title: 'Talk a real one through',
+    blurb: 'A conversation you have coming up, worked through properly.',
+  },
+]
+
 export const pick = {
-  ask: 'What is on your plate?',
-  help: 'Pick the one closest to something real this week.',
+  ask: 'Which conversation?',
+  help: 'The one closest to something real.',
   nameLabel: 'First name',
   namePlaceholder: 'Alex',
-  /* Shown under the list on a return visit, in place of nothing at all. */
   again: 'You can come back to any of these.',
 }
 
