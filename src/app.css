@@ -728,8 +728,9 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  min-height: 100dvh;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100dvh;
   max-width: none;
   padding: 0;
 }
@@ -781,7 +782,7 @@ body {
 .main {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  min-height: 0;
   max-width: none;
   padding: 0;
 }
@@ -1212,3 +1213,43 @@ body {
   margin-top: var(--s-md);
 }
 .setup .actions { margin-top: var(--s-sm); }
+
+/* ==========================================================================
+   ONE PAGE. The rail held two destinations, which made two things out of one
+   and put a second input on screen that looked identical to the first and did
+   something different. What is left is a thin header and a single column.
+   ========================================================================== */
+.app { grid-template-columns: minmax(0, 1fr); }
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-md);
+  padding: var(--s-sm) var(--s-lg);
+  border-bottom: 1px solid var(--line-2);
+  background: var(--nav);
+}
+.topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 4px 6px;
+  cursor: pointer;
+}
+.topbar-brand:hover { background: var(--sunken); }
+.topbar-brand:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.topbar-right { display: flex; align-items: center; gap: var(--s-sm); }
+
+/* Practice is a section on the page, not a page. The rule above it does the
+   separating, because a card inside a column that is already cards reads as
+   another item rather than as a change of activity. */
+.block-practice {
+  margin-top: var(--s-xl);
+  padding-top: var(--s-lg);
+  border-top: 1px solid var(--line-2);
+}
+.block-practice .session { margin: var(--s-lg) 0 0; }
+.stream-center { padding-top: 8vh; }

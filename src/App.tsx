@@ -11,13 +11,12 @@ import {
   updateOpen,
 } from './capture'
 import { Wordmark } from './brand'
-import { app, rail } from './content'
+import { app } from './content'
 import { pickModule } from './modules'
 import type { Session } from './session'
 import { getSession } from './session'
 import RecipeSheet from './parts/RecipeSheet'
 import Alone from './screens/Alone'
-import Practice from './screens/Practice'
 import Home from './screens/Home'
 import Landed from './screens/Landed'
 import Work from './screens/Work'
@@ -35,14 +34,12 @@ import Work from './screens/Work'
  *
  * A thread ends with one go at it alone, which is the only signal here that
  * separates learning from copying. Then it lands in her record. */
-type Page = 'home' | 'chat'
 type Screen = { kind: 'page' } | { kind: 'work' } | { kind: 'alone' } | { kind: 'landed' }
 
 export default function App() {
   const [who] = useState(getWho)
   const [open, setOpen] = useState<Entry | null>(getOpen)
   const [past, setPast] = useState<Past[]>(getPast)
-  const [page, setPage] = useState<Page>('home')
   const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'page' }))
   const [sheet, setSheet] = useState<string | null>(null)
   const [dark, setDark] = useState<boolean | null>(null)
@@ -107,8 +104,7 @@ export default function App() {
     setScreen({ kind: 'landed' })
   }
 
-  function goPage(p: Page) {
-    setPage(p)
+  function goHome() {
     setScreen({ kind: 'page' })
   }
 
@@ -127,20 +123,12 @@ export default function App() {
   }
 
   function renderPage() {
-    if (page === 'chat') {
-      return (
-        <Practice
-          session={session}
-          past={past}
-          onRehearse={onRehearse}
-          onOpen={() => setScreen({ kind: 'page' })}
-        />
-      )
-    }
     return (
       <Home
+        session={session}
         past={past}
         onAsk={onAsk}
+        onRehearse={onRehearse}
         onOpen={() => setScreen({ kind: 'page' })}
         onRecipe={setSheet}
       />
@@ -149,7 +137,7 @@ export default function App() {
 
   function content() {
     if (screen.kind === 'landed') {
-      return <Landed onAnother={() => setScreen({ kind: 'page' })} />
+      return <Landed onAnother={goHome} />
     }
 
     if (screen.kind === 'work' || screen.kind === 'alone') {
@@ -175,7 +163,7 @@ export default function App() {
           turns={open.turns ?? []}
           onTurns={onTurns}
           onDone={onDone}
-          onBack={() => setScreen({ kind: 'page' })}
+          onBack={goHome}
           onMode={onMode}
         />
       )
@@ -186,23 +174,11 @@ export default function App() {
 
   return (
     <div className="app">
-      <nav className="rail" aria-label={app.name}>
-        <span className="rail-brand"><Wordmark /></span>
-        <ul className="rail-list">
-          {(['home', 'chat'] as const).map((p) => (
-            <li key={p}>
-              <button
-                type="button"
-                className={`rail-item${page === p && screen.kind === 'page' ? ' rail-on' : ''}`}
-                aria-current={page === p && screen.kind === 'page' ? 'page' : undefined}
-                onClick={() => goPage(p)}
-              >
-                {rail[p]}
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="rail-foot">
+      <header className="topbar">
+        <button type="button" className="topbar-brand" aria-label={app.name} onClick={goHome}>
+          <Wordmark />
+        </button>
+        <div className="topbar-right">
           {who && <span className="whoami">{who}</span>}
           <button
             className="icon-btn"
@@ -216,7 +192,7 @@ export default function App() {
             ◐
           </button>
         </div>
-      </nav>
+      </header>
 
       {/* Home and Practice bring their own scrolling column plus a pinned bar.
           A thread is one column, so it gets the container here rather than
