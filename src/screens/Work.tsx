@@ -45,6 +45,10 @@ export default function Work({
 }) {
   const copy = modes[mode]
   const mod = moduleById(moduleId)
+  /* In a rehearsal the other side is a person in a scene, not the product
+     answering. Labelling their line Lepaya would break the character the whole
+     exercise depends on. */
+  const them = mode === 'rehearsal' ? work.other : work.them
   const [draft, setDraft] = useState('')
   const [streaming, setStreaming] = useState('')
   const [busy, setBusy] = useState(false)
@@ -175,7 +179,7 @@ export default function Work({
           if (i === 0 && t.role === 'user' && t.content === working.trim()) return null
           return (
             <div key={i} className={`turn turn-${t.role}`}>
-              <div className="turn-who">{t.role === 'user' ? work.you : work.them}</div>
+              <div className="turn-who">{t.role === 'user' ? work.you : them}</div>
               <div className="turn-text">{t.content}</div>
             </div>
           )
@@ -183,7 +187,7 @@ export default function Work({
 
         {busy && (
           <div className="turn turn-assistant">
-            <div className="turn-who">{work.them}</div>
+            <div className="turn-who">{them}</div>
             <div className="turn-text">
               {streaming || (
                 <span className="thinking">

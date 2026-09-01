@@ -221,6 +221,8 @@ export const work = {
   noKey: 'Open the full link you were sent.',
   you: 'You',
   them: 'Lepaya',
+  /* the other side of a rehearsal, who is a person in a scene */
+  other: 'Them',
 }
 
 /* One surface, three ways of working in it. The heading and the opening line
@@ -245,6 +247,28 @@ export const modes = {
     placeholder: 'Ask for anything else you need',
     empty: 'A few things worth having in mind, coming up.',
   },
+  rehearsal: {
+    head: 'Rehearsal',
+    placeholder: 'Say it the way you would say it',
+    empty: 'Open however you would actually open.',
+  },
+}
+
+/* Practice: the room that is booked, and the rehearsal she can run today.
+ *
+ * Not another chat. On Home she talks ABOUT the conversation and gets helped.
+ * Here she runs it, and the other side does not help her. Practice means
+ * rehearsing the actual conversation, which is what the actor does in the room,
+ * and a rehearsal partner who breaks character to offer tips is a coach in a
+ * costume. */
+export const practice = {
+  head: 'Run it before you have to',
+  help:
+    'The other person will not coach you. They will react the way someone actually reacts, and you get to find out where it goes wrong while it still costs nothing.',
+  who: 'Who are you talking to, and what is it about?',
+  whoPlaceholder: 'Anna, my direct report. Her last three drafts came back without the pricing section.',
+  start: 'Start the rehearsal',
+  recents: 'Rehearsals you have run',
 }
 
 /* The unassisted beat.

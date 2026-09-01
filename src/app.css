@@ -1198,3 +1198,17 @@ body {
 .stream-center { padding-top: 10vh; }
 .stream-center .greet { margin-bottom: var(--s-md); }
 .stream-center .block { margin-bottom: var(--s-lg); }
+
+/* The rehearsal setup. A form and a button, which is how a scene starts, rather
+   than an input identical to the one on Home that does a different thing. */
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: var(--s-lg);
+  margin-top: var(--s-md);
+}
+.setup .actions { margin-top: var(--s-sm); }

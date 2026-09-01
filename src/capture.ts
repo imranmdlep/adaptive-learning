@@ -37,7 +37,7 @@ export type Turn = { role: 'user' | 'assistant'; content: string }
  * work, and reaching for pointers over a conversation says the same thing a
  * willingness score would, without asking anyone to grade themselves. */
 export type Minutes = 'few' | 'some' | 'proper'
-export type Mode = 'conversation' | 'quiz' | 'pointers'
+export type Mode = 'conversation' | 'quiz' | 'pointers' | 'rehearsal'
 
 export type Entry = {
   id: string

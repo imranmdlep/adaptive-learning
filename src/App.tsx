@@ -17,7 +17,7 @@ import type { Session } from './session'
 import { getSession } from './session'
 import RecipeSheet from './parts/RecipeSheet'
 import Alone from './screens/Alone'
-import Chat from './screens/Chat'
+import Practice from './screens/Practice'
 import Home from './screens/Home'
 import Landed from './screens/Landed'
 import Work from './screens/Work'
@@ -112,16 +112,28 @@ export default function App() {
     setScreen({ kind: 'page' })
   }
 
+  /* Rehearsal is not the chat. The other side plays the person, never a coach,
+   * so it never routes through Auto and never gets a format chosen for it. */
+  function onRehearse(setup: string) {
+    const moduleId = pickModule(setup)
+    const entry = startEntry(who, moduleId, setup, {
+      minutes: 'some',
+      wanted: 'rehearsal',
+      auto: false,
+    })
+    setOpen(entry)
+    void send('rehearsal', entry)
+    setScreen({ kind: 'work' })
+  }
+
   function renderPage() {
     if (page === 'chat') {
       return (
-        <Chat
-          who={who}
+        <Practice
           session={session}
           past={past}
-          onAsk={onAsk}
+          onRehearse={onRehearse}
           onOpen={() => setScreen({ kind: 'page' })}
-          onRecipe={setSheet}
         />
       )
     }
