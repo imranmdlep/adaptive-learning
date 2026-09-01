@@ -23,6 +23,7 @@ const WHO_KEY = 'al.who'
 const KEY_KEY = 'al.key'
 const OPEN_KEY = 'al.open'
 const DONE_KEY = 'al.done'
+const PLANS_KEY = 'al.plans'
 
 export type Turn = { role: 'user' | 'assistant'; content: string }
 
@@ -66,6 +67,9 @@ export type Entry = {
    * optional. */
   unassisted?: string
   unassistedSkipped?: boolean
+  /* When they said they would actually have it. A date on its own did nothing
+   * in the research; a date AND a time worked. So both, or neither. */
+  when?: string
   startedAt: string
   /* Touched on every exchange. */
   lastAt?: string
@@ -184,6 +188,48 @@ export function rememberPast(entry: Entry) {
     at: new Date().toISOString(),
   })
   writeLocal(DONE_KEY, past)
+}
+
+/* ---- what she said she would do -------------------------------------------
+ *
+ * The one mechanic the research is clearest about. Self written plans changed
+ * nothing. Prescriptive ones worked. Asking for a date changed nothing; asking
+ * for a date AND a time worked. So a plan here is always a specific
+ * conversation, with a day and a time on it, and never a goal.
+ *
+ * It is also what makes the top of the page worth opening: a person is looking
+ * at the thing they are about to have to do, in their own words. */
+export type Plan = {
+  id: string
+  /* their own words about the conversation */
+  what: string
+  /* the day, as they picked it */
+  day: string
+  time: string
+  /* sortable, so the list is in the order the week happens */
+  at: string
+  madeAt: string
+}
+
+export function getPlans(): Plan[] {
+  const now = Date.now()
+  /* Anything whose moment has passed drops off on read. A list that keeps
+     showing yesterday's conversation turns into a pile of things you failed to
+     do, which is the opposite of what this is for. */
+  return readLocal<Plan[]>(PLANS_KEY, []).filter((p) => Date.parse(p.at) > now - 86_400_000)
+}
+
+export function addPlan(what: string, day: string, time: string, at: string): Plan {
+  const plan: Plan = { id: uid(), what, day, time, at, madeAt: new Date().toISOString() }
+  const plans = getPlans()
+  plans.push(plan)
+  plans.sort((a, b) => a.at.localeCompare(b.at))
+  writeLocal(PLANS_KEY, plans)
+  return plan
+}
+
+export function dropPlan(id: string) {
+  writeLocal(PLANS_KEY, getPlans().filter((p) => p.id !== id))
 }
 
 /* ---- sending ------------------------------------------------------------- */

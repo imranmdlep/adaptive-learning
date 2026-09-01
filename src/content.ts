@@ -33,6 +33,15 @@ export const app = {
  * return visit is a place that serves what someone is actually going after.
  *
  * So Home is a library she picks from, and the room lives on Practice. */
+/* The top of the page. What she is about to have to do, in her own words. */
+export const coming = {
+  head: 'Coming up',
+  empty: 'Nothing planned yet. Whatever you work on below ends up here.',
+  with: 'with',
+  runIt: 'Run it through',
+  howDidItGo: 'How did it go?',
+}
+
 export const home = {
   head: 'What is on your plate?',
   sessionHead: 'Your session',
@@ -47,6 +56,11 @@ export const home = {
      no streak, no progress. None of those are true of conversations that keep
      happening to a person. */
   recordHead: 'What you have worked on',
+  /* The question after the fact, quoting their own words back. A generic "how
+     did that go" has nothing to compare against; theirs does. This is the pair
+     the whole follow-up rests on. */
+  followUpAsk: (what: string) =>
+    `I had the conversation I planned: ${what}. Ask me how it actually went, one thing at a time.`,
   recordEmpty: 'Whatever you work on shows up here.',
   today: 'Today',
   yesterday: 'Yesterday',
@@ -260,9 +274,13 @@ export const alone = {
   ask: 'Your turn, on your own.',
   help: 'Write the opening line you would actually say. No help on this one.',
   placeholder: 'What you would say first',
-  commit: 'Save it',
-  skip: 'Skip this',
   note: 'Nothing marks this. It is yours.',
+  when: 'When are you having it?',
+  time: 'What time?',
+  /* Says why the time is being asked for, without lecturing. */
+  timeNote: 'A day on its own tends to slide. A day and a time tends not to.',
+  commit: 'That is the plan',
+  skip: 'Not yet',
 }
 
 export const landed = {

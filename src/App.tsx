@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { Entry, Mode, Past, Turn } from './capture'
+import type { Entry, Mode, Past, Plan, Turn } from './capture'
 import {
+  addPlan,
   clearOpen,
   getOpen,
   getPast,
+  getPlans,
   getWho,
   rememberPast,
   send,
@@ -40,6 +42,8 @@ export default function App() {
   const [who] = useState(getWho)
   const [open, setOpen] = useState<Entry | null>(getOpen)
   const [past, setPast] = useState<Past[]>(getPast)
+  /* What she said she would do, which is what the top of the page is for. */
+  const [plans, setPlans] = useState<Plan[]>(getPlans)
   const [screen, setScreen] = useState<Screen>(() => (getOpen() ? { kind: 'work' } : { kind: 'page' }))
   const [sheet, setSheet] = useState<string | null>(null)
   const [dark, setDark] = useState<boolean | null>(null)
@@ -112,6 +116,7 @@ export default function App() {
     return (
       <Home
         session={session}
+        plans={plans}
         past={past}
         onAsk={onAsk}
         onOpen={() => setScreen({ kind: 'page' })}
@@ -133,7 +138,14 @@ export default function App() {
         return (
           <Alone
             working={open.working ?? ''}
-            onNext={(text) => finish({ unassisted: text })}
+            onNext={(line, day, time) => {
+              /* The plan is what makes the top of the page worth opening, so it
+                 is written before the thread closes, never after. */
+              const at = new Date(`${day}T${time}`).toISOString()
+              addPlan(open.working ?? '', day, time, at)
+              setPlans(getPlans())
+              finish({ unassisted: line, when: at })
+            }}
             onSkip={() => finish({ unassistedSkipped: true })}
           />
         )

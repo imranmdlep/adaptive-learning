@@ -800,7 +800,9 @@ body {
   grid-template-columns: minmax(0, 720px);
   justify-content: center;
   align-content: start;
-  padding: var(--s-2xl) var(--s-lg) var(--s-xl);
+  /* The last section has to clear the pinned bar, which sits over the bottom
+     of this column and was hiding it. */
+  padding: var(--s-2xl) var(--s-lg) var(--s-2xl);
 }
 .stream-center { padding-top: 12vh; }
 
@@ -1245,3 +1247,40 @@ body {
 }
 .block-session .session { margin: var(--s-sm) 0 0; }
 .stream-center { padding-top: 8vh; }
+
+/* ---- coming up, as a dated list ------------------------------------------
+   Rows separated by a hairline rather than by cards. Cards inside a card is
+   the pattern that made the old front door read as a wall. */
+.card { padding: 0; overflow: hidden; }
+.card-empty { padding: var(--s-lg); }
+.up-row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-lg);
+  padding: var(--s-md) var(--s-lg);
+  border-bottom: 1px solid var(--line-2);
+}
+.up-row:last-child { border-bottom: none; }
+.up-body { flex: 1; min-width: 0; }
+/* Only the nearest row carries an action. A list where every row shouts is a
+   list nobody reads. */
+.up-action {
+  flex: none;
+  font: inherit;
+  font-size: var(--fz-sm);
+  font-weight: 600;
+  color: var(--on-accent);
+  background: var(--navy);
+  border: none;
+  border-radius: 999px;
+  padding: 7px var(--s-md);
+  min-height: 32px;
+  cursor: pointer;
+}
+.up-action:hover { opacity: 0.92; }
+.up-action:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+
+/* the day chips on the end of a thread */
+.opts-row { flex-direction: row; flex-wrap: wrap; }
+.opt-inline { width: auto; min-height: 36px; padding: 6px var(--s-md); }
+.input-time { width: auto; min-width: 140px; }
