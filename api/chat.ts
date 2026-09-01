@@ -86,13 +86,58 @@ No preamble, no theory, no explaining why the pointers are the pointers. Do not 
 Stop when you have given the pointers. If they come back with something else, answer that.`,
 }
 
-/* How long they said they had. Sets the size of a reply, which is the part of
- * "adaptive" this build can honestly claim today. */
-const MINUTES: Record<string, string> = {
-  few: 'They said they have a few minutes. Keep every reply to a few lines.',
-  some: 'They said they have around fifteen minutes.',
-  proper: 'They said they have a proper sitting, so take the time the work needs.',
+/* What Auto is choosing between, in the words it decides on. Kept next to the
+ * modes it maps to so the two cannot drift apart. */
+const CHOOSING = `pointers: they are about to walk into it and need specific things to say. Short notice, practical, no discussion wanted.
+quiz: they want to check what they retained. They are not in a hurry and there is no specific conversation imminent.
+conversation: they want to work something through, or the situation has any complexity, feeling or history in it.`
+
+/* Auto: pick the format from what they actually wrote.
+ *
+ * A separate, small, fast call rather than letting the main reply decide,
+ * because the choice has to be known BEFORE the answer starts streaming: it
+ * selects the instructions, and it is recorded as `used` so it can be compared
+ * against what people pick for themselves.
+ *
+ * A strict TOOL, never output_config json_schema. Measured on Opus 5, the
+ * json_schema path degenerates roughly one call in four and stop_reason cannot
+ * detect it; the tool path did not fail once in sixteen.
+ *
+ * Haiku because this is a three way classification on one sentence, and a
+ * second of latency in front of every first reply is worse than a rare wrong
+ * pick that the person can override with a recipe. */
+async function chooseMode(client: Anthropic, working: string, said: string): Promise<Mode> {
+  try {
+    const res = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 256,
+      tool_choice: { type: 'tool', name: 'choose' },
+      tools: [{
+        name: 'choose',
+        description: 'Choose how to help this person right now.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', enum: ['pointers', 'quiz', 'conversation'] },
+          },
+          required: ['mode'],
+        },
+      }],
+      system:
+        `Someone at work wrote the line below about a conversation they have to have. Choose how to help them right now.\n\n${CHOOSING}\n\nWhen it is genuinely unclear, choose conversation.`,
+      messages: [{ role: 'user', content: `${working}\n\n${said}`.slice(0, 2000) }],
+    })
+    const block = res.content.find((c) => c.type === 'tool_use')
+    const picked = block && 'input' in block ? (block.input as { mode?: string }).mode : undefined
+    return picked === 'pointers' || picked === 'quiz' ? picked : 'conversation'
+  } catch {
+    /* A classifier that fails must not take the reply down with it. The
+     * fallback is the format that is wrong least often. */
+    return 'conversation'
+  }
 }
+
+type Mode = 'pointers' | 'quiz' | 'conversation'
 
 type Turn = { role: 'user' | 'assistant'; content: string }
 
@@ -125,7 +170,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     messages?: Turn[]
     moduleId?: string
     mode?: string
-    minutes?: string
   }
   try {
     body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body ?? {})
@@ -155,12 +199,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const working = (body.working ?? '').slice(0, MAX_WORKING_CHARS).trim()
   /* The optional context answer rides the same way, and with the same cap
    * logic: caller-controlled text entering the system prompt, so truncated. */
-  /* All three are looked up in fixed tables, never interpolated, so caller
-   * text cannot reach the system prompt through any of them. Only `working`
-   * does, and it is capped. */
+  /* Looked up in fixed tables, never interpolated, so caller text cannot reach
+   * the system prompt through them. Only `working` does, and it is capped. */
   const mod = typeof body.moduleId === 'string' ? moduleById(body.moduleId) : undefined
-  const mode = typeof body.mode === 'string' ? MODES[body.mode] ?? '' : ''
-  const minutes = typeof body.minutes === 'string' ? MINUTES[body.minutes] ?? '' : ''
+
+  const client = new Anthropic()
+
+  /* Auto only decides on the opening turn. After that the thread has a shape
+   * and switching it mid conversation would be disorienting. */
+  let chosen: Mode | undefined
+  if (body.mode === 'auto' && messages.length === 1) {
+    chosen = await chooseMode(client, working, messages[0]?.content ?? '')
+  } else if (typeof body.mode === 'string' && body.mode in MODES) {
+    chosen = body.mode as Mode
+  }
+
+  const mode = chosen ? MODES[chosen] ?? '' : ''
 
   const system = [
     SYSTEM,
@@ -168,14 +222,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     mod ? `What good looks like here, which is yours to work from and never to recite:\n\n${mod.substance}` : '',
     working ? `Their own words about their case: ${working}` : '',
     mode,
-    minutes,
   ].filter(Boolean).join('\n\n')
 
   res.setHeader('Content-Type', 'text/plain; charset=utf-8')
   res.setHeader('Cache-Control', 'no-store')
+  /* What Auto picked, so the browser can record what actually opened rather
+   * than what was asked for. Set before any body is written, because after the
+   * stream starts no header can be sent. */
+  if (chosen) res.setHeader('x-mode', chosen)
 
   try {
-    const client = new Anthropic()
     const stream = client.messages.stream({
       model: 'claude-opus-5',
       /* Well under the 64k streaming default on purpose: short answers are the

@@ -25,6 +25,10 @@ export type Session = {
   trainer: string
   /* what makes it worth turning up to, in one line */
   shape: string
+  /* What is actually in the room. Not an agenda: the things she will do. */
+  inIt: string[]
+  /* Why it is worth her afternoon, said in her terms rather than ours. */
+  helps: string
   today: boolean
 }
 
@@ -36,6 +40,14 @@ const SOON: Session = {
   topic: 'Giving feedback',
   trainer: 'Noor',
   shape: 'A room, a trainer, and someone to practise the hard part on.',
+  inIt: [
+    'You bring a conversation you are actually dreading.',
+    'You run it with an actor, who does not make it easy.',
+    'Noor stops it where it goes wrong and you run that bit again.',
+    'You leave with the opening line you are going to use.',
+  ],
+  helps:
+    'The hard part of feedback is not knowing the model. It is the first ten seconds, out loud, with someone reacting. That is the part you cannot practise alone, and it is the whole reason this is a room and not a video.',
   today: false,
 }
 

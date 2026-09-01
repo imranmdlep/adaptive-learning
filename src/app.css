@@ -785,14 +785,23 @@ body {
   max-width: none;
   padding: 0;
 }
-/* The scrolling column. Content is centred and capped; the column is not, so
-   the pinned bar below spans the full width like the page it sits on. */
+/* The scrolling column. Content is capped and centred; the column is not, so
+   the pinned bar below spans the full width like the page it sits on.
+
+   A GRID COLUMN, not `max-width` plus `margin-inline: auto` on the children.
+   Auto margins lose to any child that sets the `margin` shorthand, which is the
+   same property, and a heading with `margin: 0 0 1rem` then silently sits at
+   the padding edge while its siblings stay centred. Placing everything in one
+   track cannot be overridden from inside. */
 .stream {
   flex: 1;
   overflow-y: auto;
-  padding: var(--s-2xl, 3rem) var(--s-lg) var(--s-xl);
+  display: grid;
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
+  align-content: start;
+  padding: var(--s-2xl) var(--s-lg) var(--s-xl);
 }
-.stream > * { max-width: 720px; margin-inline: auto; }
 .stream-center { padding-top: 12vh; }
 
 .block { margin-bottom: var(--s-xl); }
@@ -879,15 +888,23 @@ body {
    replacement is the point: someone writes the thing that is happening, and
    the format is decided from that or reached for afterwards. */
 .askbar {
+  display: grid;
+  grid-template-columns: minmax(0, 720px);
+  justify-content: center;
   border-top: 1px solid var(--line-2);
   background: var(--bg);
   padding: var(--s-md) var(--s-lg) var(--s-lg);
 }
-.askbar > * { max-width: 720px; margin-inline: auto; }
-.askbar-inline { border-top: none; background: none; padding: 0 0 var(--s-xl); }
-.askbar-inline > * { max-width: none; }
+/* Inside the stream it is already in the column, so it stops centring itself. */
+.askbar-inline {
+  display: block;
+  border-top: none;
+  background: none;
+  padding: 0 0 var(--s-lg);
+}
 
 .recipes { display: flex; flex-wrap: wrap; gap: var(--s-xs); margin-bottom: var(--s-sm); }
+.askbar-inline .recipes { margin: var(--s-sm) 0 0; }
 .recipe-wrap { display: inline-flex; align-items: stretch; }
 .recipe {
   font: inherit;
@@ -1058,4 +1075,86 @@ body {
   .rail-foot { margin-top: 0; margin-left: auto; }
   .stream { padding: var(--s-lg) var(--s-md); }
   .askbar { padding: var(--s-sm) var(--s-md) var(--s-md); }
+}
+
+/* The thread header: their own words, plain.
+   Navy is reserved for the session panel, which is the moment that carries the
+   identity. A second navy block on the busiest screen spends it in the wrong
+   place and makes neither read as special. */
+.thread-head {
+  margin-bottom: var(--s-lg);
+  padding-bottom: var(--s-md);
+  border-bottom: 1px solid var(--line-2);
+}
+.thread-head .recall-said {
+  font-family: var(--display);
+  font-size: var(--fz-xl);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  margin: 0;
+  background: none;
+  padding: 0;
+}
+.thread-head .coverage { margin-top: var(--s-xs); }
+
+/* ---- the session card, on Practice --------------------------------------
+   The only navy panel in the app. Navy is where identity lives in the design
+   system, and the room is the thing everything else here points at, so this is
+   where it gets spent. Spending it twice would make neither read as special. */
+.session { margin-bottom: var(--s-xl); }
+.session-more {
+  align-self: flex-start;
+  margin-top: var(--s-md);
+  font: inherit;
+  font-size: var(--fz-sm);
+  /* Ivory with a hairline, never the functional blurple: blurple on navy fails
+     contrast, which is the trap the design system audit found. */
+  color: var(--on-navy);
+  background: none;
+  border: 1px solid rgba(243, 244, 251, 0.45);
+  border-radius: var(--r-sm);
+  padding: 5px var(--s-sm);
+  min-height: 32px;
+  cursor: pointer;
+}
+.session-more:hover { background: rgba(243, 244, 251, 0.09); }
+.session-more:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--navy), 0 0 0 4px var(--on-navy);
+}
+.session-detail {
+  margin-top: var(--s-md);
+  padding-top: var(--s-md);
+  border-top: 1px solid rgba(243, 244, 251, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-xs);
+}
+.session-detail-head {
+  margin: var(--s-sm) 0 0;
+  font-family: var(--mono);
+  font-size: var(--fz-2xs);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--on-navy-dim);
+}
+.session-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--on-navy);
+  font-size: var(--fz-sm);
+  max-width: 56ch;
+}
+.session-list li::marker { color: var(--on-navy-dim); }
+.session-helps {
+  margin: 0;
+  color: var(--on-navy);
+  font-size: var(--fz-sm);
+  line-height: 1.6;
+  max-width: 56ch;
 }

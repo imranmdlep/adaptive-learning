@@ -71,6 +71,15 @@ export default function App() {
     setScreen({ kind: 'work' })
   }
 
+  /* What Auto actually opened, which is not necessarily what was asked for.
+   * Recorded separately from `wanted` on purpose: the difference between the
+   * two is the experiment. */
+  function onMode(used: Mode) {
+    const next = updateOpen({ used })
+    setOpen(next)
+    if (next) void send('mode', next)
+  }
+
   /* Persisted after every exchange rather than at the end, so a closed tab or a
    * flat battery still leaves the conversation up to that point. */
   function onTurns(turns: Turn[]) {
@@ -118,7 +127,6 @@ export default function App() {
     }
     return (
       <Home
-        session={session}
         past={past}
         onAsk={onAsk}
         onOpen={() => setScreen({ kind: 'page' })}
@@ -156,6 +164,7 @@ export default function App() {
           onTurns={onTurns}
           onDone={onDone}
           onBack={() => setScreen({ kind: 'page' })}
+          onMode={onMode}
         />
       )
     }
@@ -197,7 +206,12 @@ export default function App() {
         </div>
       </nav>
 
-      <main className="main">{content()}</main>
+      {/* Home and Practice bring their own scrolling column plus a pinned bar.
+          A thread is one column, so it gets the container here rather than
+          rendering straight into the shell, which is what made it full bleed. */}
+      <main className="main">
+        {screen.kind === 'page' ? content() : <div className="stream">{content()}</div>}
+      </main>
 
       {sheet && <RecipeSheet label={sheet} session={session} onClose={() => setSheet(null)} />}
     </div>

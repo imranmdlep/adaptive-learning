@@ -25,17 +25,34 @@ export const app = {
  * The session panel is the human moment made visible. If the trainer is the
  * premium, the room is the best thing that happens here and it should read
  * that way, not as a date in a list. */
+/* HOME IS HERS.
+ *
+ * Not the session, and not a schedule. Opening on the booked event makes this a
+ * runbook for one afternoon, which is what the current product already is and
+ * what the phase-1 interviews name as the problem. The thing that earns a
+ * return visit is a place that serves what someone is actually going after.
+ *
+ * So Home is a library she picks from, and the room lives on Practice. */
 export const home = {
-  comingUp: 'Coming up',
-  /* Shown inside the coming up card when there is nothing in it. */
-  comingUpEmpty: 'Nothing booked. What you write below still lands here.',
-  sessionWith: 'with',
+  head: 'What do you want to get better at?',
+  help: 'Pick one, or just write what is on your plate.',
   /* The record. Her own trail, most recent first, and nothing else: no count,
      no streak, no progress. None of those are true of conversations that keep
      happening to a person. */
+  recordHead: 'What you have worked on',
   recordEmpty: 'Whatever you work on shows up here.',
   today: 'Today',
   yesterday: 'Yesterday',
+}
+
+/* The session, which lives on Practice as something to look into. */
+export const session = {
+  eyebrow: 'Your session',
+  with: 'with',
+  more: 'What is in it',
+  less: 'Close',
+  inIt: 'What you will actually do',
+  why: 'Why it is a room and not a video',
 }
 
 export const rail = {
@@ -46,8 +63,9 @@ export const rail = {
 /* The second page. Home is where her week is; this is where she starts
  * something. */
 export const chat = {
-  greet: (who: string) => (who ? `Hi ${who}, what is coming up?` : 'What is coming up?'),
-  recents: 'Recent',
+  greet: (who: string) => (who ? `Ready when you are, ${who}.` : 'Ready when you are.'),
+  help: 'Write the conversation you are actually facing.',
+  recents: 'Picking up where you left off',
   recipes: 'Ways to work on it',
   untitled: 'Untitled',
 }

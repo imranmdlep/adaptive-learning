@@ -2,6 +2,7 @@ import type { Mode, Past } from '../capture'
 import type { Session } from '../session'
 import { authoredRecipe, chat, recipes } from '../content'
 import AskBar from '../parts/AskBar'
+import SessionCard from '../parts/SessionCard'
 
 /* The second page: a greeting, one input, what she was last in the middle of,
  * and the recipes laid out rather than tucked above the bar.
@@ -30,8 +31,14 @@ export default function Chat({
 
   return (
     <>
-      <div className="stream stream-center">
+      <div className="stream">
+        {/* The room, and the only navy panel in the app. If the trainer is the
+            premium then this is the moment worth spending the identity colour
+            on, and spending it twice would make neither read as special. */}
+        {session && <SessionCard session={session} />}
+
         <h1 className="greet">{chat.greet(who)}</h1>
+        <p className="lead">{chat.help}</p>
 
         <AskBar recipes={[]} onAsk={onAsk} onRecipe={onRecipe} inline />
 

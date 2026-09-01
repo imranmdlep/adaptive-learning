@@ -25,6 +25,7 @@ export default function Work({
   onTurns,
   onDone,
   onBack,
+  onMode,
 }: {
   /* the situation resolved from what they wrote, never shown as a skill */
   moduleId: string
@@ -39,6 +40,8 @@ export default function Work({
   onTurns: (t: Turn[]) => void
   onDone: () => void
   onBack: () => void
+  /* told what Auto actually chose, once the server has chosen it */
+  onMode: (m: Mode) => void
 }) {
   const copy = modes[mode]
   const mod = moduleById(moduleId)
@@ -58,8 +61,21 @@ export default function Work({
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [turns.length, streaming])
 
-  async function send() {
-    const text = draft.trim()
+  /* What they wrote on the way in is the opening turn, sent for them.
+   *
+   * Without this the thread opened with an empty transcript and waited, which
+   * reads as the app having ignored the sentence they just typed. The guard is
+   * a ref rather than state because React runs effects twice in development and
+   * a duplicate opening turn is not recoverable. */
+  const opened = useRef(false)
+  useEffect(() => {
+    if (opened.current || turns.length > 0 || !working.trim()) return
+    opened.current = true
+    void send(working.trim())
+  }, [])
+
+  async function send(given?: string) {
+    const text = (given ?? draft).trim()
     if (!text || busy) return
 
     const next: Turn[] = [...turns, { role: 'user', content: text }]
@@ -77,11 +93,17 @@ export default function Work({
         headers: { 'Content-Type': 'application/json', 'x-app-key': getKey() },
         body: JSON.stringify({
           moduleId,
-          mode,
+          mode: auto ? 'auto' : mode,
           working: working || undefined,
           messages: next,
         }),
       })
+      /* What Auto picked, when it picked. The browser records what actually
+         opened rather than what was asked for, which is the only check on a
+         self-reported answer. */
+      const picked = res.headers.get('x-mode')
+      if (picked && picked !== mode) onMode(picked as Mode)
+
       if (res.status === 401) {
         setNoKey(true)
         setDraft(text)
@@ -134,7 +156,7 @@ export default function Work({
         <span className="thread-mode">{copy.head}{auto ? work.autoTag : ''}</span>
       </div>
 
-      <div className="recall">
+      <div className="thread-head">
         {/* Their own words are the title. Never ours summarising them back. */}
         <p className="recall-said">{working || mod?.title}</p>
         {/* What this is drawing on, and what it is not. Saying so is why it
@@ -146,12 +168,18 @@ export default function Work({
       <div className="thread">
         {turns.length === 0 && !busy && <p className="lead">{copy.empty}</p>}
 
-        {turns.map((t, i) => (
-          <div key={i} className={`turn turn-${t.role}`}>
-            <div className="turn-who">{t.role === 'user' ? work.you : work.them}</div>
-            <div className="turn-text">{t.content}</div>
-          </div>
-        ))}
+        {turns.map((t, i) => {
+          /* The first user turn is the line they wrote on the way in, and it is
+             already the title above. Showing it again in a bubble says the same
+             thing twice in two type styles. */
+          if (i === 0 && t.role === 'user' && t.content === working.trim()) return null
+          return (
+            <div key={i} className={`turn turn-${t.role}`}>
+              <div className="turn-who">{t.role === 'user' ? work.you : work.them}</div>
+              <div className="turn-text">{t.content}</div>
+            </div>
+          )
+        })}
 
         {busy && (
           <div className="turn turn-assistant">
