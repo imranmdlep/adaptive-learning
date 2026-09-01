@@ -1471,3 +1471,107 @@ body {
 .rail-narrow .rail-top { padding-bottom: var(--s-sm); }
 /* The name becomes its initial, which still says whose account this is. */
 .rail-narrow .whoami { border-radius: var(--r-pill); font-size: var(--fz-sm); }
+
+/* ==========================================================================
+   MOTION.
+   Everything appeared and disappeared on the same frame, which reads as the
+   interface flinching rather than responding. The rules here are narrow on
+   purpose: state changes get a short ease so the eye can follow what moved,
+   and nothing decorative animates. --motion is the DS value, 140ms.
+
+   Every one of these is switched off under prefers-reduced-motion at the
+   bottom of this block. A person who has asked their machine to stop moving
+   things has asked us too.
+   ========================================================================== */
+
+/* Anything that changes on hover, focus or selection. Colour and shadow only:
+   nothing here moves position, because a control that shifts under the cursor
+   is harder to hit. */
+.opt,
+.skill,
+.recipe,
+.recipe-open,
+.rail-item,
+.icon-btn,
+.record-row,
+.up-action,
+.session-more,
+.thread-next,
+.btn {
+  transition:
+    background-color var(--motion),
+    border-color var(--motion),
+    color var(--motion),
+    box-shadow var(--motion);
+}
+
+/* The rail. The grid column is auto, so it follows the rail's own width and
+   the canvas slides with it rather than jumping to a new size. */
+.rail {
+  transition: width 180ms cubic-bezier(0.4, 0, 0.2, 1), padding-inline var(--motion);
+}
+
+/* The dock rising out of the bar. It grows upward from where the input already
+   was, so it enters from below rather than fading in from nowhere. */
+.dock-open {
+  animation: dock-rise 200ms cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+@keyframes dock-rise {
+  from { transform: translateY(14px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+/* Taking it taller is a size change, not an entrance. */
+.dock { transition: max-height 200ms cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* A turn arriving. Small and quick: the reply is the thing being waited for,
+   so it should not also have to be waited for on screen. */
+.turn {
+  animation: turn-in 180ms cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+@keyframes turn-in {
+  from { transform: translateY(6px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* What the session card reveals when it is opened. */
+.session-detail {
+  animation: turn-in 180ms cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opt,
+  .skill,
+  .recipe,
+  .recipe-open,
+  .rail-item,
+  .icon-btn,
+  .record-row,
+  .up-action,
+  .session-more,
+  .thread-next,
+  .btn,
+  .rail,
+  .dock {
+    transition: none;
+  }
+  .dock-open,
+  .turn,
+  .session-detail {
+    animation: none;
+  }
+}
+
+/* Folding back down. The dock stays mounted for the length of this so the
+   close eases the way the open does; without it, opening glided and closing
+   snapped, which reads worse than no motion at all. */
+.dock-folding {
+  animation: dock-fold 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+@keyframes dock-fold {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(14px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-folding { animation: none; opacity: 0; }
+}

@@ -46,6 +46,9 @@ import Work from './screens/Work'
  *
  * A thread ends with one go at it alone, which is the only signal here that
  * separates learning from copying. Then it lands in her record. */
+/* Matches the fold animation in app.css. Kept here so the two cannot drift. */
+const FOLD_MS = 180
+
 type Screen = { kind: 'page' } | { kind: 'work' } | { kind: 'alone' } | { kind: 'landed' }
 
 export default function App() {
@@ -62,6 +65,10 @@ export default function App() {
   /* A thread starts at the size of the bar it grew out of, and can be taken
    * full height when somebody wants to read rather than glance. */
   const [big, setBig] = useState(false)
+  /* Kept mounted for the length of the fold so it can animate out. Without it
+   * the element unmounts on the same frame the class is removed, so opening
+   * eased and closing snapped, which is worse than neither. */
+  const [folding, setFolding] = useState(false)
   const [busy, setBusy] = useState(false)
   /* Whether the rail is open. Remembered, because a person who narrows it wants
    * it narrow tomorrow as well, and re-collapsing it every visit is the kind of
@@ -146,6 +153,17 @@ export default function App() {
 
   function goHome() {
     setScreen({ kind: 'page' })
+  }
+
+  /* Fold the thread back into the bar, letting the animation finish first. */
+  function fold() {
+    if (folding) return
+    setBig(false)
+    setFolding(true)
+    window.setTimeout(() => {
+      setFolding(false)
+      goHome()
+    }, FOLD_MS)
   }
 
   function renderPage() {
@@ -282,7 +300,9 @@ export default function App() {
             was. It is not a dialog. There is no scrim, the page behind stays
             fully lit, and closing collapses it back to a bar rather than
             dismissing a window. */}
-        <div className={`dock${screen.kind === 'page' ? '' : ' dock-open'}${big ? ' dock-big' : ''}`}>
+        <div
+          className={`dock${screen.kind === 'page' ? '' : ' dock-open'}${big ? ' dock-big' : ''}${folding ? ' dock-folding' : ''}`}
+        >
           {screen.kind !== 'page' && (
             <>
               <div className="dock-bar">
@@ -294,7 +314,7 @@ export default function App() {
                   type="button"
                   className="icon-btn"
                   aria-label={app.collapse}
-                  onClick={() => { setBig(false); goHome() }}
+                  onClick={fold}
                 >
                   <IconChevronDown size={17} stroke={1.6} aria-hidden />
                 </button>
