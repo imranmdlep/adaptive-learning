@@ -64,6 +64,10 @@ export default function AskBar({
   return (
     <div className={docked ? 'askbar askbar-docked' : 'askbar'}>
       {box}
+      {/* Under the box, where somebody looks when they are deciding whether to
+          trust what came back. Says it plainly once rather than hedging inside
+          every reply. */}
+      <p className="ask-note">{ask.note}</p>
     </div>
   )
 }

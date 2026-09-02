@@ -1323,7 +1323,9 @@ body {
   z-index: 11;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 0;
+  /* Off the bottom edge. Flush against it read as cut off, and there is a line
+     under the input that needs the room. */
+  bottom: var(--s-md);
   width: min(760px, calc(100% - var(--s-lg) * 2));
   display: flex;
   flex-direction: column;
@@ -1345,22 +1347,48 @@ body {
   justify-content: flex-end;
   gap: var(--s-xs);
   flex: none;
-  padding: var(--s-xs) var(--s-xs) 0;
+  /* Tight. The controls are a 40px hit area each, which is already enough
+     height; padding on top of that opened a gap above the first line of the
+     thread that read as a mistake. */
+  padding: 4px 4px 0;
 }
+/* A height nobody declared cannot be transitioned: auto to auto is not a
+   change CSS can tween, so the card jumped on a single frame. A grid row from
+   0fr to 1fr is the one thing that does animate to a content height. */
 .dock-body {
   flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.dock-open .dock-body { grid-template-rows: 1fr; }
+/* The scrolling lives inside, because a grid row cannot also scroll. */
+.dock-scroll {
   min-height: 0;
   overflow-y: auto;
   padding: 0 var(--s-lg) var(--s-md);
 }
+/* The thread's own header sits right under the controls. */
+.dock-body > section > .thread-head:first-child { margin-top: 0; }
 
 /* Inside the dock the card already carries the chrome. */
 .askbar-docked {
   flex: none;
   border-top: none;
   background: none;
-  padding: var(--s-sm) var(--s-md) var(--s-md);
+  padding: var(--s-sm) var(--s-md) var(--s-sm);
   display: block;
+}
+
+/* Says what this is, under the thing you type into, where somebody looks when
+   they are deciding whether to trust an answer. Quiet enough to ignore and
+   permanent enough to have been told. */
+.ask-note {
+  margin: var(--s-xs) 0 0;
+  font-size: var(--fz-xs);
+  color: var(--muted);
+  text-align: center;
 }
 .dock-open .askbar-docked { padding-top: 0; }
 /* The chips only make sense before a thread exists; inside one the mode is
@@ -1373,7 +1401,7 @@ body {
 .stream { padding-bottom: var(--s-2xl); }
 
 @media (max-width: 800px) {
-  .dock { width: calc(100% - var(--s-sm) * 2); }
+  .dock { width: calc(100% - var(--s-sm) * 2); bottom: var(--s-sm); }
 }
 
 /* No send button. Enter sends, so the row has to say when a reply is coming,
@@ -1386,7 +1414,7 @@ body {
 }
 
 /* Taller when somebody wants to read rather than glance. */
-.dock-big { max-height: calc(100% - var(--s-md)); height: calc(100% - var(--s-md)); }
+.dock-big { height: calc(100% - var(--s-xl)); max-height: calc(100% - var(--s-xl)); }
 
 /* The way on from a thread, in the conversation rather than in the chrome.
    It is a step forward, not a way to dismiss something. */
@@ -1521,7 +1549,7 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 /* Taking it taller is a size change, not an entrance. */
-.dock { transition: max-height 200ms cubic-bezier(0.4, 0, 0.2, 1); }
+
 
 /* A turn arriving. Small and quick: the reply is the thing being waited for,
    so it should not also have to be waited for on screen. */
@@ -1559,6 +1587,7 @@ body {
   .session-detail {
     animation: none;
   }
+  .dock-body { transition: none; }
 }
 
 /* Folding back down. The dock stays mounted for the length of this so the

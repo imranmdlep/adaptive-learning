@@ -107,6 +107,9 @@ export const ask = {
   send: 'Send',
   working: 'Working',
   recipesLabel: 'Ways to work on it',
+  /* The product name in the interface is Lepaya, so the disclosure uses it too
+     rather than saying "the AI", which would name a thing that is not here. */
+  note: 'Lepaya uses AI and can get things wrong.',
   about: 'About',
 }
 

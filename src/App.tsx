@@ -303,35 +303,34 @@ export default function App() {
         <div
           className={`dock${screen.kind === 'page' ? '' : ' dock-open'}${big ? ' dock-big' : ''}${folding ? ' dock-folding' : ''}`}
         >
+          {/* The body is always in the tree, even collapsed and empty. A grid row
+              can only animate from 0fr if a 0fr frame was ever rendered, and
+              mounting it already open gives the browser nothing to move from. */}
           {screen.kind !== 'page' && (
-            <>
-              <div className="dock-bar">
-                {/* Two controls, and neither of them closes anything. The
-                    chevron folds the thread back down into the bar it grew out
-                    of; the diagonal takes it taller for reading. Nothing is
-                    dismissed either way, because the thread is in the record. */}
-                <button
-                  type="button"
-                  className="icon-btn"
-                  aria-label={app.collapse}
-                  onClick={fold}
-                >
-                  <IconChevronDown size={17} stroke={1.6} aria-hidden />
-                </button>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  aria-label={big ? app.shrink : app.expand}
-                  onClick={() => setBig((v) => !v)}
-                >
-                  {big
-                    ? <IconArrowsDiagonalMinimize2 size={16} stroke={1.6} aria-hidden />
-                    : <IconArrowsDiagonal size={16} stroke={1.6} aria-hidden />}
-                </button>
-              </div>
-              <div className="dock-body">{panel()}</div>
-            </>
+            <div className="dock-bar">
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label={app.collapse}
+                onClick={fold}
+              >
+                <IconChevronDown size={17} stroke={1.6} aria-hidden />
+              </button>
+              <button
+                type="button"
+                className="icon-btn"
+                aria-label={big ? app.shrink : app.expand}
+                onClick={() => setBig((v) => !v)}
+              >
+                {big
+                  ? <IconArrowsDiagonalMinimize2 size={16} stroke={1.6} aria-hidden />
+                  : <IconArrowsDiagonal size={16} stroke={1.6} aria-hidden />}
+              </button>
+            </div>
           )}
+          <div className="dock-body">
+            <div className="dock-scroll">{panel()}</div>
+          </div>
           <AskBar onAsk={onBar} busy={busy} docked />
         </div>
       </main>
