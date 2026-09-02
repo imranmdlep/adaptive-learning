@@ -1,6 +1,16 @@
+# esbuild's postinstall fetches its platform binary, and vite cannot build
+# without it. Left unapproved, pnpm skips it with a warning rather than an
+# error, and the build fails a step later with something that does not mention
+# esbuild at all. That is what broke the first deploy of this project, and the
+# deploy before it on the sibling repo.
+#
+# Both spellings on purpose: allowBuilds is what pnpm 11 reads (it wrote this
+# block itself, with placeholders, when it hit the warning), onlyBuiltDependencies
+# is the pnpm 9 and 10 name. Which version a CI image ships is not ours to pin.
 allowBuilds:
-  dprint: set this to true or false
-  esbuild: set this to true or false
+  dprint: true
+  esbuild: true
+
 onlyBuiltDependencies:
   - esbuild
   - dprint
