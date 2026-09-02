@@ -19,7 +19,7 @@ export function checkKey(given: unknown): Gate {
     /* VERCEL is set on every deployment, so this branch is local only. */
     if (process.env.VERCEL) {
       console.error('[auth] APP_PASSCODE is not set on a deployed environment')
-      return { ok: false, status: 503, message: 'This is not set up correctly yet. Tell Imran.' }
+      return { ok: false, status: 503, message: 'This link is not set up yet. Nothing you did.' }
     }
     return { ok: true }
   }
